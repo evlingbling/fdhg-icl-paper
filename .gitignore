@@ -8,7 +8,7 @@ dist/
 outputs/
 logs/
 artifacts/
-data/
+/data/
 .cache/
 
 *.parquet
