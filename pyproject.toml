@@ -27,8 +27,11 @@ gbdt = [
   "catboost",
   "xgboost",
 ]
+relbench = [
+  "relbench>=1.1.0",
+]
 dev = [
-  "pytest>=8",
+  "pytest>=8,<10",
   "ruff>=0.5",
 ]
 
