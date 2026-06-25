@@ -31,7 +31,7 @@ run_task () {
       echo "rel-event/${task} | ${variant} | seed=${seed}"
       echo "============================================================"
 
-      python scripts/run_generic_parquet_tabpfn_eval_with_predictions.py \
+      python scripts/evaluate/evaluate_binary_tabpfn.py \
         --train-parquet \
         "${root}/target_with_dfs_agg_train.parquet" \
         --val-parquet \

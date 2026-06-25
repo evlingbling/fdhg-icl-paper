@@ -22,7 +22,7 @@ for variant in dfs fdhg_dmax1; do
     echo "rel-hm/transactions-price | ${variant} | seed=${seed}"
     echo "============================================================"
 
-    python scripts/run_generic_parquet_tabpfn_regression_eval.py \
+    python scripts/evaluate/evaluate_regression_tabpfn.py \
       --train-parquet \
       "${root}/target_with_dfs_agg_train.parquet" \
       --val-parquet \
