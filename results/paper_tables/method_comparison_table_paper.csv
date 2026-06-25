@@ -1,0 +1,9 @@
+method,category,uses_relational_tables,uses_fd_or_normalization,uses_end_to_end_graph_learning,uses_frozen_single_table_decoder,column_aligned,role_in_paper
+Target table only,baseline,no,no,no,yes,yes,Measures performance without relational signal
+Naive join flattening,baseline,yes,no,no,yes,partially,Simple multi-table flattening baseline
+DFS-style aggregation,baseline,yes,no,no,yes,yes,Feature engineering baseline using generic one-to-many aggregations
+JUICE/RDBLearn-style meta-path aggregation,related baseline,yes,no,no,yes,yes,Closest RDB-to-ICL style baseline preserving column-wise meta-path features
+RelBench official RDL/GNN,external baseline,yes,no,yes,no,no,Strong end-to-end relational learning reference
+FDHG-ICL,ours,yes,yes,no,yes,yes,Normalization-aware FD/FK/aggregation feature compiler
+XGBoost/CatBoost on compiled features,decoder robustness,yes,yes,no,no,yes,Tests whether generated features are predictive beyond TabPFN
+Oracle synthetic compiler,synthetic upper bound,yes,yes,no,yes,yes,Upper bound and sanity check under known label-generating programs
