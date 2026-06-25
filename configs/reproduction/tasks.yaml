@@ -1,0 +1,73 @@
+tasks:
+  rel-event/event_interest-interested:
+    problem_type: binary
+    label_col: interested
+
+    target:
+      primary_key_col: primary_key
+      entity_key: user
+      source_table: event_interest
+      source_entity_col: user
+      time_col: timestamp
+      verify_label_col: interested
+
+    dfs:
+      child_table: event_interest
+      numeric_col: user
+      max_train: 14442
+      max_val: 2000
+
+    afd:
+      entity_table: users
+      entity_table_key: user_id
+      columns:
+        - locale
+        - birthyear
+        - gender
+        - joinedAt
+        - location
+        - timezone
+
+    evaluation:
+      drop_cols:
+        - timestamp
+        - primary_key
+        - user
+        - f_event_interest_count
+
+  rel-hm/transactions-price:
+    problem_type: regression
+    label_col: price
+
+    target:
+      primary_key_col: primary_key
+      entity_key: article_id
+      source_table: transactions
+      source_entity_col: article_id
+      time_col: timestamp
+
+    dfs:
+      child_table: transactions
+      numeric_col: sales_channel_id
+      max_train: 10000
+      max_val: 2000
+
+    evaluation:
+      drop_cols:
+        - timestamp
+        - primary_key
+        - article_id
+
+  rel-ratebeer/beer_ratings-total_score:
+    problem_type: regression
+    label_col: total_score
+
+    dfs:
+      max_train: 10000
+      max_val: 2000
+
+    evaluation:
+      drop_cols:
+        - created_at
+        - rating_id
+        - beer_id
