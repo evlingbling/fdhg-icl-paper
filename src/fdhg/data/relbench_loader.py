@@ -45,7 +45,14 @@ def _as_pandas_table(obj: Any) -> pd.DataFrame:
 
 
 def _get_dataset(dataset_name: str) -> Any:
-    from relbench.datasets import get_dataset
+    try:
+        from relbench.datasets import get_dataset
+    except ImportError as exc:
+        raise RuntimeError(
+            "RelBench is required for dataset loading. "
+            'Install the reproduction dependencies with: '
+            'python -m pip install -e ".[relbench]"'
+        ) from exc
 
     # Local-cache fast path:
     # RelBench/pooch can try to re-fetch db.zip when the registry hash is stale,

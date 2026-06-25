@@ -291,12 +291,38 @@ def build_features(
     target_time_col: Optional[str],
     child_table: Optional[str],
     numeric_col: Optional[str],
+    splits: list[str],
 ) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    train = load_parquet(inspect_dir / "target_train.parquet")
-    val = load_parquet(inspect_dir / "target_val.parquet")
-    test = load_parquet(inspect_dir / "target_test.parquet")
+    split_to_df: dict[str, pd.DataFrame] = {}
+
+    max_rows_by_split = {
+        "train": max_train,
+        "val": max_val,
+        "test": max_test,
+    }
+
+    for split in splits:
+        target_path = inspect_dir / f"target_{split}.parquet"
+
+        if not target_path.exists():
+            raise FileNotFoundError(
+                f"Requested split {split!r} is missing: {target_path}"
+            )
+
+        split_df = load_parquet(target_path)
+        split_df = maybe_sample(
+            split_df,
+            max_rows_by_split[split],
+            seed,
+        )
+        split_to_df[split] = split_df
+
+    if "train" not in split_to_df:
+        raise ValueError("The train split is required for feature construction.")
+
+    train = split_to_df["train"]
 
     if target_key is None:
         target_key = infer_target_key(train)
@@ -328,10 +354,6 @@ def build_features(
 
     child = load_parquet(child_path)
 
-    train = maybe_sample(train, max_train, seed)
-    val = maybe_sample(val, max_val, seed)
-    test = maybe_sample(test, max_test, seed)
-
     print("=== Generic RelBench feature builder ===")
     print("mode:", mode)
     print("inspect_dir:", inspect_dir)
@@ -341,9 +363,8 @@ def build_features(
     print("child_path:", child_path)
     print("child_time_col:", child_time_col)
     print("numeric_col:", numeric_col)
-    print("train:", train.shape)
-    print("val:", val.shape)
-    print("test:", test.shape)
+    for split in splits:
+        print(f"{split}:", split_to_df[split].shape)
     print("child:", child.shape)
 
     con = duckdb.connect(database=":memory:")
@@ -412,12 +433,6 @@ def build_features(
         """)
     else:
         raise ValueError(f"Unknown mode: {mode}")
-
-    split_to_df = {
-        "train": train,
-        "val": val,
-        "test": test,
-    }
 
     feature_cols_ref = None
 
@@ -528,6 +543,13 @@ def main() -> None:
     parser.add_argument("--target-time-col", default=None)
     parser.add_argument("--child-table", default=None)
     parser.add_argument("--numeric-col", default=None)
+    parser.add_argument(
+        "--splits",
+        nargs="+",
+        default=["train", "val"],
+        choices=["train", "val", "test"],
+        help="Target splits to build. Defaults to train and val.",
+    )
 
     args = parser.parse_args()
 
@@ -543,6 +565,7 @@ def main() -> None:
         target_time_col=args.target_time_col,
         child_table=args.child_table,
         numeric_col=args.numeric_col,
+        splits=args.splits,
     )
 
 
