@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-DEVICE="${DEVICE:-cuda}"
-SEEDS=(41 42 43 44)
+DEVICE="${DEVICE:-cpu}"
+SEEDS=(41)
 
 run_task () {
   task="$1"
@@ -42,6 +42,7 @@ run_task () {
         --variant "$variant" \
         --label-col "$label" \
         --drop-cols timestamp,primary_key,user \
+        --device "$DEVICE" \
         --seed "$seed" \
         2>&1 | tee "$log"
     done
@@ -51,10 +52,6 @@ run_task () {
 run_task \
   event_interest-interested \
   interested
-
-run_task \
-  event_interest-not_interested \
-  not_interested
 
 echo
 echo "============================================================"

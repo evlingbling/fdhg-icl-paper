@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SEEDS=(41 42 43 44)
+DEVICE="${DEVICE:-cpu}"
+
+SEEDS=(41)
 
 for variant in dfs fdhg_dmax1; do
   if [[ "$variant" == "dfs" ]]; then
@@ -33,6 +35,7 @@ for variant in dfs fdhg_dmax1; do
       --variant "$variant" \
       --label-col price \
       --drop-cols "t_dat,primary_key,article_id" \
+      --device "$DEVICE" \
       --seed "$seed" \
       2>&1 | tee "$log"
   done
