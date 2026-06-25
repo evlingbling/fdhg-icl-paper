@@ -40,6 +40,42 @@ def load_config(dataset: str, task: str) -> dict[str, Any]:
         ) from exc
 
 
+def apply_table_aliases(
+    inspect_dir: Path,
+    aliases: dict[str, dict[str, str]],
+) -> None:
+    """Add configured column aliases to standardized inspect tables."""
+    for table_name, column_map in aliases.items():
+        table_path = inspect_dir / f"table_{table_name}.parquet"
+
+        if not table_path.exists():
+            raise FileNotFoundError(
+                f"Alias source table does not exist: {table_path}"
+            )
+
+        df = pd.read_parquet(table_path)
+        changed = False
+
+        for alias, source in column_map.items():
+            if alias in df.columns:
+                continue
+            if source not in df.columns:
+                raise KeyError(
+                    f"Cannot create alias {alias!r}: "
+                    f"source column {source!r} is missing from {table_path}"
+                )
+
+            df[alias] = df[source]
+            changed = True
+            print(
+                f"[alias] {table_name}.{alias} "
+                f"<- {table_name}.{source}"
+            )
+
+        if changed:
+            df.to_parquet(table_path, index=False)
+
+
 def add_entity_alias(
     inspect_dir: Path,
     *,
@@ -127,6 +163,10 @@ def main() -> None:
     else:
         enriched_inspect = raw_inspect
 
+    table_aliases = cfg.get("table_aliases", {})
+    if table_aliases:
+        apply_table_aliases(enriched_inspect, table_aliases)
+
     dfs_cfg = cfg["dfs"]
 
     # 3. DFS
@@ -193,7 +233,16 @@ def main() -> None:
                 "--target-table", afd_cfg["entity_table"],
             ])
     else:
-        # No usable FDHG edge: exact DFS fallback.
+        if not cfg.get("fallback_to_dfs", False):
+            raise ValueError(
+                "No AFD configuration was provided. "
+                "Set fallback_to_dfs: true for an intentional DFS fallback."
+            )
+
+        print(
+            "[fallback] No FDHG candidate selected; "
+            "using the exact DFS artifact."
+        )
         fdhg_dir = dfs_dir
 
     if args.prepare_only:

@@ -2,7 +2,6 @@ tasks:
   rel-event/event_interest-interested:
     problem_type: binary
     label_col: interested
-
     target:
       primary_key_col: primary_key
       entity_key: user
@@ -10,64 +9,76 @@ tasks:
       source_entity_col: user
       time_col: timestamp
       verify_label_col: interested
-
     dfs:
       child_table: event_interest
       numeric_col: user
       max_train: 14442
       max_val: 2000
-
     afd:
       entity_table: users
       entity_table_key: user_id
       columns:
-        - locale
-        - birthyear
-        - gender
-        - joinedAt
-        - location
-        - timezone
-
+      - locale
+      - birthyear
+      - gender
+      - joinedAt
+      - location
+      - timezone
     evaluation:
       drop_cols:
-        - timestamp
-        - primary_key
-        - user
-        - f_event_interest_count
-
+      - timestamp
+      - primary_key
+      - user
+      - f_event_interest_count
   rel-hm/transactions-price:
     problem_type: regression
     label_col: price
-
     target:
       primary_key_col: primary_key
       entity_key: article_id
       source_table: transactions
       source_entity_col: article_id
-      time_col: timestamp
-
+      time_col: t_dat
+      verify_label_col: price
     dfs:
       child_table: transactions
-      numeric_col: sales_channel_id
+      numeric_col: sales_channel_value
       max_train: 10000
       max_val: 2000
-
     evaluation:
       drop_cols:
-        - timestamp
-        - primary_key
-        - article_id
-
+      - t_dat
+      - primary_key
+      - article_id
+      - f_transactions_days_since_last
+    table_aliases:
+      transactions:
+        sales_channel_value: sales_channel_id
+    afd:
+      entity_table: article
+      entity_table_key: article_id
+      columns:
+      - index_group_no
+      - index_group_name
   rel-ratebeer/beer_ratings-total_score:
     problem_type: regression
     label_col: total_score
-
     dfs:
+      child_table: beer_ratings
+      numeric_col: total_score
       max_train: 10000
       max_val: 2000
-
     evaluation:
       drop_cols:
-        - created_at
-        - rating_id
-        - beer_id
+      - created_at
+      - rating_id
+      - beer_id
+      - f_beer_ratings_days_since_last
+    target:
+      primary_key_col: rating_id
+      entity_key: beer_id
+      source_table: beer_ratings
+      source_entity_col: beer_id
+      time_col: created_at
+      verify_label_col: total_score
+    fallback_to_dfs: true
