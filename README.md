@@ -56,7 +56,7 @@ micromamba create -n fdhg-repro python=3.10 -y
 micromamba activate fdhg-repro
 
 python -m pip install --upgrade pip
-python -m pip install -e ".[dev]"
+python -m pip install -e ".[dev,relbench]"
 ```
 
 Alternatively, use the provided environment file:
@@ -285,7 +285,7 @@ micromamba create -n fdhg-repro python=3.10 -y
 micromamba activate fdhg-repro
 
 python -m pip install --upgrade pip
-python -m pip install -e ".[dev]"
+python -m pip install -e ".[dev,relbench]"
 ```
 
 Alternatively, use the provided environment file:
@@ -499,7 +499,7 @@ cd fdhg-icl-paper-fresh
 micromamba create -n fdhg-repro python=3.10 -y
 micromamba activate fdhg-repro
 
-python -m pip install -e ".[dev]"
+python -m pip install -e ".[dev,relbench]"
 fdhg-inspect --help
 python -m pytest -q
 python -m pip check
