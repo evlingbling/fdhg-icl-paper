@@ -155,3 +155,386 @@ tasks:
       - user_id
       - place_id
     fallback_to_dfs: true
+  rel-ratebeer/beer-churn:
+    builder: generic_dfs
+    inspect_task: beer-churn
+    problem_type: binary
+    label_col: rating_churn
+    target:
+      entity_key: beer_id
+      time_col: timestamp
+    dfs:
+      child_table: beer_ratings
+      child_time_col: updated_at
+      numeric_col: aroma
+      max_train: 10000
+      max_val: 2000
+    afd:
+      entity_table: availability
+      entity_table_key: beer_id
+      add_entity_alias: false
+      max_rows: 50000
+      columns: &id001
+      - avail_id
+      - beer_id
+      - place_id
+      - postal_code
+      - state_id
+      - country_id
+      - created_at
+      - user_id
+      - is_in_bottle
+      - is_on_tap
+      - is_out
+      exclude_columns: []
+    evaluation:
+      drop_cols:
+      - timestamp
+      - beer_id
+    expected_gate: select
+  rel-ratebeer/brewer-dormant:
+    builder: generic_dfs
+    inspect_task: brewer-dormant
+    problem_type: binary
+    label_col: dormant
+    target:
+      entity_key: brewer_id
+      time_col: timestamp
+    dfs:
+      child_table: beers
+      child_time_col: created_at
+      numeric_col: alcohol_pct
+      max_train: 10000
+      max_val: 2000
+    afd:
+      entity_table: brewers
+      entity_table_key: brewer_id
+      add_entity_alias: false
+      max_rows: 50000
+      columns:
+      - brewer_id
+      - name
+      - description
+      - name_plain
+      - address
+      - city
+      - state_id
+      - country_id
+      - zip_code
+      - type_id
+      - website
+      - facebook
+      - twitter
+      - email
+      - phone
+      - barrels
+      - opened_at
+      - created_at
+      - created_by
+      - updated_at
+      - beer_jobber_id
+      - has_logo
+      - view_count
+      - score
+      - is_out_of_business
+      - out_of_business_date
+      - is_retired
+      - area_code
+      - hours
+      - metro_id
+      - region_id
+      - admin_note
+      - msrepl_tran_version
+      - updated_by
+      exclude_columns: []
+    evaluation:
+      drop_cols:
+      - timestamp
+      - brewer_id
+    expected_gate: fallback
+  rel-ratebeer/user-churn:
+    builder: generic_dfs
+    inspect_task: user-churn
+    problem_type: binary
+    label_col: user_churn
+    target:
+      entity_key: user_id
+      time_col: timestamp
+    dfs:
+      child_table: beer_ratings
+      child_time_col: updated_at
+      numeric_col: aroma
+      max_train: 10000
+      max_val: 2000
+    afd:
+      entity_table: availability
+      entity_table_key: user_id
+      add_entity_alias: false
+      max_rows: 50000
+      columns: *id001
+      exclude_columns: []
+    evaluation:
+      drop_cols:
+      - timestamp
+      - user_id
+    expected_gate: fallback
+  rel-ratebeer/user-count:
+    builder: generic_dfs
+    inspect_task: user-count
+    problem_type: regression
+    label_col: num_ratings
+    target:
+      entity_key: user_id
+      time_col: timestamp
+    dfs:
+      child_table: beer_ratings
+      child_time_col: updated_at
+      numeric_col: aroma
+      max_train: 10000
+      max_val: 2000
+    afd:
+      entity_table: availability
+      entity_table_key: user_id
+      add_entity_alias: false
+      max_rows: 50000
+      columns: *id001
+      exclude_columns: []
+    evaluation:
+      drop_cols:
+      - timestamp
+      - user_id
+    expected_gate: select
+  rel-salt/item-incoterms:
+    builder: generic_dfs
+    inspect_task: item-incoterms
+    problem_type: multiclass
+    label_col: ITEMINCOTERMSCLASSIFICATION
+    target:
+      entity_key: ID
+      time_col: CREATIONTIMESTAMP
+    dfs:
+      child_table: salesdocumentitem
+      child_time_col: CREATIONTIMESTAMP
+      numeric_col: SHIPPINGPOINT
+      max_train: 10000
+      max_val: 2000
+    afd:
+      entity_table: salesdocumentitem
+      entity_table_key: ID
+      add_entity_alias: false
+      max_rows: 50000
+      columns: &id002
+      - SALESDOCUMENT
+      - SALESDOCUMENTITEM
+      - PLANT
+      - SHIPPINGPOINT
+      - SALESDOCUMENTITEMCATEGORY
+      - PRODUCT
+      - SOLDTOPARTY
+      - SHIPTOPARTY
+      - BILLTOPARTY
+      - PAYERPARTY
+      - ITEMINCOTERMSCLASSIFICATION
+      - CREATIONTIMESTAMP
+      - ID
+      exclude_columns: []
+    evaluation:
+      drop_cols:
+      - CREATIONTIMESTAMP
+      - ID
+    expected_gate: fallback
+  rel-salt/item-plant:
+    builder: generic_dfs
+    inspect_task: item-plant
+    problem_type: multiclass
+    label_col: PLANT
+    target:
+      entity_key: ID
+      time_col: CREATIONTIMESTAMP
+    dfs:
+      child_table: salesdocumentitem
+      child_time_col: CREATIONTIMESTAMP
+      numeric_col: SHIPPINGPOINT
+      max_train: 10000
+      max_val: 2000
+    afd:
+      entity_table: salesdocumentitem
+      entity_table_key: ID
+      add_entity_alias: false
+      max_rows: 50000
+      columns: *id002
+      exclude_columns: []
+    evaluation:
+      drop_cols:
+      - CREATIONTIMESTAMP
+      - ID
+    expected_gate: fallback
+  rel-salt/item-shippoint:
+    builder: generic_dfs
+    inspect_task: item-shippoint
+    problem_type: multiclass
+    label_col: SHIPPINGPOINT
+    target:
+      entity_key: ID
+      time_col: CREATIONTIMESTAMP
+    dfs:
+      child_table: salesdocumentitem
+      child_time_col: CREATIONTIMESTAMP
+      numeric_col: PLANT
+      max_train: 10000
+      max_val: 2000
+    afd:
+      entity_table: salesdocumentitem
+      entity_table_key: ID
+      add_entity_alias: false
+      max_rows: 50000
+      columns: *id002
+      exclude_columns: []
+    evaluation:
+      drop_cols:
+      - CREATIONTIMESTAMP
+      - ID
+    expected_gate: select
+  rel-salt/sales-group:
+    builder: generic_dfs
+    inspect_task: sales-group
+    problem_type: multiclass
+    label_col: SALESGROUP
+    target:
+      entity_key: SALESDOCUMENT
+      time_col: CREATIONTIMESTAMP
+    dfs:
+      child_table: salesdocument
+      child_time_col: CREATIONTIMESTAMP
+      numeric_col: SALESOFFICE
+      max_train: 10000
+      max_val: 2000
+    afd:
+      entity_table: salesdocument
+      entity_table_key: SALESDOCUMENT
+      add_entity_alias: false
+      max_rows: 50000
+      columns: &id003
+      - SALESDOCUMENT
+      - SALESOFFICE
+      - SALESGROUP
+      - CUSTOMERPAYMENTTERMS
+      - SHIPPINGCONDITION
+      - SALESDOCUMENTTYPE
+      - SALESORGANIZATION
+      - DISTRIBUTIONCHANNEL
+      - ORGANIZATIONDIVISION
+      - BILLINGCOMPANYCODE
+      - TRANSACTIONCURRENCY
+      - HEADERINCOTERMSCLASSIFICATION
+      - CREATIONTIMESTAMP
+      exclude_columns: []
+    evaluation:
+      drop_cols:
+      - CREATIONTIMESTAMP
+      - SALESDOCUMENT
+    expected_gate: select
+  rel-salt/sales-incoterms:
+    builder: generic_dfs
+    inspect_task: sales-incoterms
+    problem_type: multiclass
+    label_col: HEADERINCOTERMSCLASSIFICATION
+    target:
+      entity_key: SALESDOCUMENT
+      time_col: CREATIONTIMESTAMP
+    dfs:
+      child_table: salesdocument
+      child_time_col: CREATIONTIMESTAMP
+      numeric_col: SALESOFFICE
+      max_train: 10000
+      max_val: 2000
+    afd:
+      entity_table: salesdocument
+      entity_table_key: SALESDOCUMENT
+      add_entity_alias: false
+      max_rows: 50000
+      columns: *id003
+      exclude_columns: []
+    evaluation:
+      drop_cols:
+      - CREATIONTIMESTAMP
+      - SALESDOCUMENT
+    expected_gate: select
+  rel-salt/sales-office:
+    builder: generic_dfs
+    inspect_task: sales-office
+    problem_type: multiclass
+    label_col: SALESOFFICE
+    target:
+      entity_key: SALESDOCUMENT
+      time_col: CREATIONTIMESTAMP
+    dfs:
+      child_table: salesdocument
+      child_time_col: CREATIONTIMESTAMP
+      numeric_col: SALESOFFICE
+      max_train: 10000
+      max_val: 2000
+    afd:
+      entity_table: salesdocument
+      entity_table_key: SALESDOCUMENT
+      add_entity_alias: false
+      max_rows: 50000
+      columns: *id003
+      exclude_columns: []
+    evaluation:
+      drop_cols:
+      - CREATIONTIMESTAMP
+      - SALESDOCUMENT
+    expected_gate: select
+  rel-salt/sales-payterms:
+    builder: generic_dfs
+    inspect_task: sales-payterms
+    problem_type: multiclass
+    label_col: CUSTOMERPAYMENTTERMS
+    target:
+      entity_key: SALESDOCUMENT
+      time_col: CREATIONTIMESTAMP
+    dfs:
+      child_table: salesdocument
+      child_time_col: CREATIONTIMESTAMP
+      numeric_col: SALESOFFICE
+      max_train: 10000
+      max_val: 2000
+    afd:
+      entity_table: salesdocument
+      entity_table_key: SALESDOCUMENT
+      add_entity_alias: false
+      max_rows: 50000
+      columns: *id003
+      exclude_columns: []
+    evaluation:
+      drop_cols:
+      - CREATIONTIMESTAMP
+      - SALESDOCUMENT
+    expected_gate: select
+  rel-salt/sales-shipcond:
+    builder: generic_dfs
+    inspect_task: sales-shipcond
+    problem_type: multiclass
+    label_col: SHIPPINGCONDITION
+    target:
+      entity_key: SALESDOCUMENT
+      time_col: CREATIONTIMESTAMP
+    dfs:
+      child_table: salesdocument
+      child_time_col: CREATIONTIMESTAMP
+      numeric_col: SALESOFFICE
+      max_train: 10000
+      max_val: 2000
+    afd:
+      entity_table: salesdocument
+      entity_table_key: SALESDOCUMENT
+      add_entity_alias: false
+      max_rows: 50000
+      columns: *id003
+      exclude_columns: []
+    evaluation:
+      drop_cols:
+      - CREATIONTIMESTAMP
+      - SALESDOCUMENT
+    expected_gate: select
