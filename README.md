@@ -227,3 +227,80 @@ results/paper_tables/relbench_v2_fdhg_gate_outcome_summary.csv
 results/paper_tables/full_target_experiment_checklist.csv
 ```
 
+
+## End-to-End Reproduction
+
+Run any configured task with the same command:
+
+```bash
+python scripts/reproduce/run_task.py \
+  --dataset <dataset> \
+  --task <task> \
+  --device cpu
+```
+
+Preparation only:
+
+```bash
+python scripts/reproduce/run_task.py \
+  --dataset <dataset> \
+  --task <task> \
+  --prepare-only
+```
+
+Rebuild from raw RelBench data:
+
+```bash
+python scripts/reproduce/run_task.py \
+  --dataset <dataset> \
+  --task <task> \
+  --device cpu \
+  --force
+```
+
+### Supported examples
+
+#### Binary classification
+
+```bash
+python scripts/reproduce/run_task.py \
+  --dataset rel-event \
+  --task event_interest-interested \
+  --device cpu
+```
+
+| Variant | Features | Accuracy | AUROC | AP | Log Loss |
+|---|---:|---:|---:|---:|---:|
+| DFS | 2 | 0.731343 | 0.461327 | 0.247115 | 0.583912 |
+| FDHG dmax1 | 10 | 0.731343 | 0.526927 | 0.274117 | 0.581789 |
+
+#### Regression
+
+```bash
+python scripts/reproduce/run_task.py \
+  --dataset rel-hm \
+  --task transactions-price \
+  --device cpu
+```
+
+| Variant | Features | RMSE | MAE | R2 |
+|---|---:|---:|---:|---:|
+| DFS | 4 | 0.024492 | 0.014646 | 0.005122 |
+| FDHG dmax1 | 5 | 0.023939 | 0.014225 | 0.049580 |
+
+#### Validation-gated fallback
+
+```bash
+python scripts/reproduce/run_task.py \
+  --dataset rel-ratebeer \
+  --task beer_ratings-total_score \
+  --device cpu
+```
+
+| Variant | Features | RMSE | MAE | R2 |
+|---|---:|---:|---:|---:|
+| DFS | 8 | 0.565587 | 0.385917 | 0.331664 |
+| FDHG fallback | 8 | 0.565587 | 0.385917 | 0.331664 |
+
+Task-specific configurations are stored in `configs/reproduction/tasks.yaml`.
+Generated artifacts are written under `outputs/e2e/<dataset>_<task>/` and `results/<dataset>_<task>_tabpfn/`.
