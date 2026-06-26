@@ -233,7 +233,7 @@ results/paper_tables/full_target_experiment_checklist.csv
 Run any configured task with the same command:
 
 ```bash
-python scripts/reproduce/run_task.py \
+fdhg-reproduce \
   --dataset <dataset> \
   --task <task> \
   --device cpu
@@ -242,7 +242,7 @@ python scripts/reproduce/run_task.py \
 Preparation only:
 
 ```bash
-python scripts/reproduce/run_task.py \
+fdhg-reproduce \
   --dataset <dataset> \
   --task <task> \
   --prepare-only
@@ -251,7 +251,7 @@ python scripts/reproduce/run_task.py \
 Rebuild from raw RelBench data:
 
 ```bash
-python scripts/reproduce/run_task.py \
+fdhg-reproduce \
   --dataset <dataset> \
   --task <task> \
   --device cpu \
@@ -263,7 +263,7 @@ python scripts/reproduce/run_task.py \
 #### Binary classification
 
 ```bash
-python scripts/reproduce/run_task.py \
+fdhg-reproduce \
   --dataset rel-event \
   --task event_interest-interested \
   --device cpu
@@ -277,7 +277,7 @@ python scripts/reproduce/run_task.py \
 #### Regression
 
 ```bash
-python scripts/reproduce/run_task.py \
+fdhg-reproduce \
   --dataset rel-hm \
   --task transactions-price \
   --device cpu
@@ -291,7 +291,7 @@ python scripts/reproduce/run_task.py \
 #### Validation-gated fallback
 
 ```bash
-python scripts/reproduce/run_task.py \
+fdhg-reproduce \
   --dataset rel-ratebeer \
   --task beer_ratings-total_score \
   --device cpu
