@@ -1,0 +1,17 @@
+task_key,gate_outcome,has_dfs_config,has_dfs_manifest,n_dfs_features,has_ambiguity_manifest,n_ambiguity_features,n_gate_tables,needs_manual_recovery
+rel-arxiv/author-category,SELECT,False,False,0,False,0,2,True
+rel-arxiv/paper-citation,FALLBACK,False,False,0,True,0,2,True
+rel-ratebeer/beer-churn,SELECT,True,True,9,True,4,2,False
+rel-ratebeer/beer_ratings-total_score_enriched,FALLBACK,True,True,9,True,4,0,False
+rel-ratebeer/brewer-dormant,FALLBACK,True,True,9,True,4,2,False
+rel-ratebeer/user-churn,FALLBACK,True,True,9,True,4,2,False
+rel-ratebeer/user-count,SELECT,True,True,9,True,4,2,False
+rel-ratebeer/user-place-liked_pairwise,FALLBACK,False,False,0,False,0,2,True
+rel-salt/item-incoterms,FALLBACK,True,True,9,True,4,2,False
+rel-salt/item-plant,FALLBACK,True,True,9,True,4,2,False
+rel-salt/item-shippoint,SELECT,True,True,9,True,4,2,False
+rel-salt/sales-group,SELECT,True,True,9,True,4,2,False
+rel-salt/sales-incoterms,SELECT,True,True,9,True,4,2,False
+rel-salt/sales-office,SELECT,True,True,9,True,4,2,False
+rel-salt/sales-payterms,SELECT,True,True,9,True,4,2,False
+rel-salt/sales-shipcond,SELECT,True,True,9,True,4,2,False

@@ -1,0 +1,14 @@
+{
+  "dataset": "rel-arxiv",
+  "task": "paper-citation",
+  "gate_decision": "FALLBACK",
+  "train_rows": 10000,
+  "val_rows": 2000,
+  "total_columns": 18,
+  "feature_columns": 14,
+  "seed": 41,
+  "target_sampling_exact": true,
+  "column_order_exact": true,
+  "feature_values_exact": true,
+  "fallback_semantics": "FDHG output equals DFS output"
+}
