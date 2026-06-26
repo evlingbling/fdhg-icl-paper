@@ -364,9 +364,84 @@ def main() -> None:
             seed=args.seed,
         )
 
-        # This gate task is an exact fallback. The adapter still
-        # receives both paths because its CLI emits both variants.
-        base_fdhg_dir = base_dfs_dir
+        # Build the real FDHG candidate before pairwise adaptation.
+        # The validation gate may later reject it and select exact DFS
+        # fallback, but candidate construction must remain independent.
+        afd_cfg = cfg.get("afd")
+        if not afd_cfg:
+            raise ValueError(
+                "ratebeer_user_place_pairwise requires an AFD "
+                "configuration."
+            )
+
+        afd_dir.mkdir(parents=True, exist_ok=True)
+        afd_path = afd_dir / "afd_dmax1.csv"
+
+        if not afd_path.exists():
+            afd_cmd = [
+                sys.executable,
+                "scripts/prepare/compute_afd_dmax1.py",
+                "--table",
+                str(
+                    enriched_inspect
+                    / (
+                        "table_"
+                        f"{afd_cfg['entity_table']}.parquet"
+                    )
+                ),
+                "--out",
+                str(afd_path),
+                "--seed",
+                str(args.seed),
+                "--columns",
+                *afd_cfg["columns"],
+            ]
+
+            if afd_cfg.get("max_rows") is not None:
+                afd_cmd.extend([
+                    "--max-rows",
+                    str(afd_cfg["max_rows"]),
+                ])
+
+            exclude_columns = afd_cfg.get(
+                "exclude_columns",
+                [],
+            )
+            if exclude_columns:
+                afd_cmd.extend([
+                    "--exclude-columns",
+                    *exclude_columns,
+                ])
+
+            run(afd_cmd)
+
+        if not standard_artifact_exists(base_fdhg_dir):
+            run([
+                sys.executable,
+                "scripts/prepare/build_fdhg_ambiguity.py",
+                "--inspect-dir",
+                str(enriched_inspect),
+                "--dfs-dir",
+                str(base_dfs_dir),
+                "--afd-stats",
+                str(afd_path),
+                "--out-dir",
+                str(base_fdhg_dir),
+                "--entity-key",
+                target_cfg["entity_key"],
+                "--target-table",
+                afd_cfg["entity_table"],
+            ])
+
+        required_base_fdhg = (
+            base_fdhg_dir
+            / "target_with_dfs_agg_train.parquet"
+        )
+        if not required_base_fdhg.exists():
+            raise FileNotFoundError(
+                f"Missing base FDHG artifact: "
+                f"{required_base_fdhg}"
+            )
 
         expected_pairwise = (
             pairwise_dir / "dfs_train_pairwise.parquet"
@@ -425,18 +500,19 @@ def main() -> None:
                     fdhg_inspect,
                 )
 
-            add_entity_alias(
-                fdhg_inspect,
-                entity_table=afd_cfg["entity_table"],
-                source_key=afd_cfg["entity_table_key"],
-                target_key=target_cfg["entity_key"],
-            )
+            if afd_cfg.get("add_entity_alias", True):
+                add_entity_alias(
+                    fdhg_inspect,
+                    entity_table=afd_cfg["entity_table"],
+                    source_key=afd_cfg["entity_table_key"],
+                    target_key=target_cfg["entity_key"],
+                )
 
             afd_dir.mkdir(parents=True, exist_ok=True)
             afd_path = afd_dir / "afd_dmax1.csv"
 
             if not afd_path.exists():
-                run([
+                afd_cmd = [
                     sys.executable,
                     "scripts/prepare/compute_afd_dmax1.py",
                     "--table",
@@ -450,10 +526,28 @@ def main() -> None:
                     "--out", str(afd_path),
                     "--seed", str(args.seed),
                     "--columns", *afd_cfg["columns"],
-                    "--exclude-columns",
-                    target_cfg["entity_key"],
-                    afd_cfg["entity_table_key"],
-                ])
+                ]
+
+                if afd_cfg.get("max_rows") is not None:
+                    afd_cmd.extend([
+                        "--max-rows",
+                        str(afd_cfg["max_rows"]),
+                    ])
+
+                exclude_columns = afd_cfg.get(
+                    "exclude_columns",
+                    [
+                        target_cfg["entity_key"],
+                        afd_cfg["entity_table_key"],
+                    ],
+                )
+                if exclude_columns:
+                    afd_cmd.extend([
+                        "--exclude-columns",
+                        *exclude_columns,
+                    ])
+
+                run(afd_cmd)
 
             if not standard_artifact_exists(fdhg_dir):
                 run([

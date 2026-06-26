@@ -82,7 +82,6 @@ tasks:
       time_col: created_at
       verify_label_col: total_score
     fallback_to_dfs: true
-
   rel-arxiv/paper-citation:
     builder: arxiv_paper_citation
     inspect_task: paper-citation
@@ -100,7 +99,6 @@ tasks:
       - date
       - Paper_ID
     fallback_to_dfs: true
-
   rel-arxiv/author-category:
     builder: arxiv_author_category
     inspect_task: author-category
@@ -117,3 +115,43 @@ tasks:
       - __row_id
       - date
       - Author_ID
+  rel-ratebeer/user-place-liked_pairwise:
+    builder: ratebeer_user_place_pairwise
+    inspect_task: user-place-liked
+    problem_type: binary
+    label_col: label
+    target:
+      entity_key: user_id
+      time_col: timestamp
+    dfs:
+      child_table: beer_ratings
+      child_time_col: updated_at
+      numeric_col: aroma
+      max_train: 10000
+      max_val: 2000
+    afd:
+      entity_table: availability
+      entity_table_key: user_id
+      add_entity_alias: false
+      max_rows: 50000
+      columns:
+      - avail_id
+      - beer_id
+      - place_id
+      - postal_code
+      - state_id
+      - country_id
+      - created_at
+      - user_id
+      - is_in_bottle
+      - is_on_tap
+      - is_out
+      exclude_columns: []
+    pairwise:
+      neg_per_pos: 1
+    evaluation:
+      drop_cols:
+      - timestamp
+      - user_id
+      - place_id
+    fallback_to_dfs: true
