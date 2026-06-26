@@ -230,6 +230,13 @@ results/paper_tables/full_target_experiment_checklist.csv
 
 ## End-to-End Reproduction
 
+Install the RelBench and TabPFN dependencies before running full reproduction:
+
+```bash
+python -m pip install -e ".[dev,relbench,tabpfn]"
+```
+
+
 Run any configured task with the same command:
 
 ```bash
