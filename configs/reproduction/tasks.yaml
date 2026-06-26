@@ -82,3 +82,38 @@ tasks:
       time_col: created_at
       verify_label_col: total_score
     fallback_to_dfs: true
+
+  rel-arxiv/paper-citation:
+    builder: arxiv_paper_citation
+    inspect_task: paper-citation
+    problem_type: binary
+    label_col: cited
+    target:
+      entity_key: Paper_ID
+      time_col: date
+    dfs:
+      max_train: 10000
+      max_val: 2000
+    evaluation:
+      drop_cols:
+      - __row_id
+      - date
+      - Paper_ID
+    fallback_to_dfs: true
+
+  rel-arxiv/author-category:
+    builder: arxiv_author_category
+    inspect_task: author-category
+    problem_type: multiclass
+    label_col: primary_category
+    target:
+      entity_key: Author_ID
+      time_col: date
+    dfs:
+      max_train: 10000
+      max_val: 2000
+    evaluation:
+      drop_cols:
+      - __row_id
+      - date
+      - Author_ID

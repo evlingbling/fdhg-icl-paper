@@ -9,42 +9,112 @@ from sklearn.preprocessing import LabelEncoder
 from tabpfn import TabPFNClassifier
 
 
-def canonical_label_series(s):
-    """Normalize labels so 6 and 6.0 are treated as the same class."""
-    x = pd.to_numeric(s, errors="ignore")
-    if pd.api.types.is_numeric_dtype(x):
-        xf = pd.to_numeric(x, errors="coerce")
-        if xf.notna().all():
-            # If all numeric labels are integer-valued, cast to int strings.
-            if np.all(np.isclose(xf.to_numpy(), np.round(xf.to_numpy()))):
-                return pd.Series(np.round(xf.to_numpy()).astype(int), index=s.index).astype(str)
-            return xf.astype(str)
-    return s.astype(str)
+def canonical_label_series(
+    series: pd.Series,
+) -> pd.Series:
+    """Return stable numeric labels when possible, otherwise strings."""
+    numeric = pd.to_numeric(
+        series,
+        errors="coerce",
+    )
 
+    original_non_missing = series.notna()
+    numeric_conversion_ok = bool(
+        numeric[original_non_missing].notna().all()
+    )
 
-def preprocess_X(train_df, val_df, feature_cols):
-    X_train = train_df[feature_cols].copy()
-    X_val = val_df[feature_cols].copy()
+    if numeric_conversion_ok:
+        numeric = numeric.astype("float64")
 
-    for X in (X_train, X_val):
-        for c in X.columns:
-            if str(X[c].dtype).startswith("datetime"):
-                X[c] = X[c].astype("int64") / 1e9
-            elif X[c].dtype == "bool":
-                X[c] = X[c].astype(int)
-            else:
-                X[c] = pd.to_numeric(X[c], errors="coerce")
+        finite = numeric.dropna()
+        integer_valued = bool(
+            ((finite % 1) == 0).all()
+        )
 
-        X.replace([np.inf, -np.inf], np.nan, inplace=True)
+        if integer_valued:
+            return numeric.astype("Int64")
 
-        for c in X.columns:
-            med = X[c].median()
-            if pd.isna(med):
-                med = 0.0
-            X[c] = X[c].fillna(med)
+        return numeric
+
+    return (
+        series.astype("string")
+        .fillna("__MISSING_LABEL__")
+    )
+
+def preprocess_X(
+    train: pd.DataFrame,
+    val: pd.DataFrame,
+    feature_cols: list[str],
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Fit preprocessing on train and apply it consistently to val."""
+    X_train = train[feature_cols].copy()
+    X_val = val[feature_cols].copy()
+
+    for column in feature_cols:
+        train_series = X_train[column]
+        val_series = X_val[column]
+
+        train_numeric = pd.to_numeric(
+            train_series,
+            errors="coerce",
+        )
+        val_numeric = pd.to_numeric(
+            val_series,
+            errors="coerce",
+        )
+
+        # Treat a column as numeric when all non-missing training
+        # values can be represented numerically.
+        original_non_missing = train_series.notna()
+        numeric_non_missing = train_numeric.notna()
+
+        is_numeric = bool(
+            numeric_non_missing[original_non_missing].all()
+        )
+
+        if is_numeric:
+            train_numeric = train_numeric.astype("float64")
+            val_numeric = val_numeric.astype("float64")
+
+            median = train_numeric.median()
+            if pd.isna(median):
+                median = 0.0
+
+            X_train[column] = train_numeric.fillna(
+                float(median)
+            )
+            X_val[column] = val_numeric.fillna(
+                float(median)
+            )
+        else:
+            train_text = train_series.astype("string")
+            val_text = val_series.astype("string")
+
+            mode = train_text.mode(dropna=True)
+            fill_value = (
+                mode.iloc[0]
+                if not mode.empty
+                else "__MISSING__"
+            )
+
+            combined = pd.concat(
+                [train_text, val_text],
+                ignore_index=True,
+            ).fillna(fill_value)
+
+            codes, _ = pd.factorize(
+                combined,
+                sort=True,
+            )
+
+            X_train[column] = codes[
+                : len(X_train)
+            ].astype("float64")
+            X_val[column] = codes[
+                len(X_train) :
+            ].astype("float64")
 
     return X_train, X_val
-
 
 def main():
     ap = argparse.ArgumentParser()
