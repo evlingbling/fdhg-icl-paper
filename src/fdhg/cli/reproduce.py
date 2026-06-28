@@ -229,7 +229,26 @@ def main() -> None:
         action="store_true",
         help="Build DFS/FDHG artifacts without model evaluation.",
     )
+    parser.add_argument(
+        "--evaluate-only",
+        action="store_true",
+        help=(
+            "Reuse existing DFS/FDHG artifacts and run "
+            "model evaluation only."
+        ),
+    )
     args = parser.parse_args()
+
+    if args.prepare_only and args.evaluate_only:
+        parser.error(
+            "--prepare-only and --evaluate-only "
+            "cannot be used together"
+        )
+
+    if args.force and args.evaluate_only:
+        parser.error(
+            "--force and --evaluate-only cannot be used together"
+        )
 
     cfg = load_config(args.dataset, args.task)
 
@@ -253,259 +272,126 @@ def main() -> None:
     base_fdhg_dir = work_root / "base_fdhg"
     pairwise_dir = work_root / "pairwise_raw"
 
-    if args.force and work_root.exists():
-        shutil.rmtree(work_root)
+    if not args.evaluate_only:
+        if args.force and work_root.exists():
+            shutil.rmtree(work_root)
 
-    # 1. RelBench inspection
-    if not (raw_inspect / "target_train.parquet").exists():
-        run([
-            "fdhg-inspect",
-            "--dataset", args.dataset,
-            "--task", inspect_task,
-            "--out-dir", str(inspect_parent),
-        ])
+        # 1. RelBench inspection
+        if not (raw_inspect / "target_train.parquet").exists():
+            run([
+                "fdhg-inspect",
+                "--dataset", args.dataset,
+                "--task", inspect_task,
+                "--out-dir", str(inspect_parent),
+            ])
 
-    target_cfg = cfg.get("target", {})
+        target_cfg = cfg.get("target", {})
 
-    # 2. Optional row-key enrichment
-    if target_cfg.get("primary_key_col"):
-        if not (
-            enriched_inspect / "target_train.parquet"
-        ).exists():
-            command = [
-                sys.executable,
-                "scripts/prepare/enrich_target_from_primary_key.py",
-                "--inspect-dir", str(raw_inspect),
-                "--out-dir", str(enriched_inspect),
-                "--source-table", target_cfg["source_table"],
-                "--primary-key-col",
-                target_cfg["primary_key_col"],
-                "--entity-key", target_cfg["entity_key"],
-                "--source-entity-col",
-                target_cfg["source_entity_col"],
-                "--verify-time-col", target_cfg["time_col"],
-                "--splits", "train", "val",
-            ]
+        # 2. Optional row-key enrichment
+        if target_cfg.get("primary_key_col"):
+            if not (
+                enriched_inspect / "target_train.parquet"
+            ).exists():
+                command = [
+                    sys.executable,
+                    "scripts/prepare/enrich_target_from_primary_key.py",
+                    "--inspect-dir", str(raw_inspect),
+                    "--out-dir", str(enriched_inspect),
+                    "--source-table", target_cfg["source_table"],
+                    "--primary-key-col",
+                    target_cfg["primary_key_col"],
+                    "--entity-key", target_cfg["entity_key"],
+                    "--source-entity-col",
+                    target_cfg["source_entity_col"],
+                    "--verify-time-col", target_cfg["time_col"],
+                    "--splits", "train", "val",
+                ]
 
-            verify_label = target_cfg.get("verify_label_col")
-            if verify_label:
-                command.extend([
-                    "--verify-label-col",
-                    verify_label,
+                verify_label = target_cfg.get("verify_label_col")
+                if verify_label:
+                    command.extend([
+                        "--verify-label-col",
+                        verify_label,
+                    ])
+
+                run(command)
+        else:
+            enriched_inspect = raw_inspect
+
+        table_aliases = cfg.get("table_aliases", {})
+        if table_aliases:
+            apply_table_aliases(
+                enriched_inspect,
+                table_aliases,
+            )
+
+        dfs_cfg = cfg["dfs"]
+        builder = cfg.get("builder", "generic_dfs")
+
+        # 3. Feature builder dispatch
+        if builder == "generic_dfs":
+            build_generic_dfs(
+                inspect_dir=enriched_inspect,
+                dfs_dir=dfs_dir,
+                target_cfg=target_cfg,
+                dfs_cfg=dfs_cfg,
+                seed=args.seed,
+            )
+
+        elif builder == "arxiv_paper_citation":
+            if not standard_artifact_exists(dfs_dir):
+                run([
+                    sys.executable,
+                    "scripts/prepare/custom/"
+                    "build_arxiv_paper_citation_features.py",
+                    "--inspect-dir", str(enriched_inspect),
+                    "--out-dir", str(dfs_dir),
+                    "--max-train", str(dfs_cfg["max_train"]),
+                    "--max-val", str(dfs_cfg["max_val"]),
+                    "--seed", str(args.seed),
+                    "--splits", "train", "val",
                 ])
 
-            run(command)
-    else:
-        enriched_inspect = raw_inspect
-
-    table_aliases = cfg.get("table_aliases", {})
-    if table_aliases:
-        apply_table_aliases(
-            enriched_inspect,
-            table_aliases,
-        )
-
-    dfs_cfg = cfg["dfs"]
-    builder = cfg.get("builder", "generic_dfs")
-
-    # 3. Feature builder dispatch
-    if builder == "generic_dfs":
-        build_generic_dfs(
-            inspect_dir=enriched_inspect,
-            dfs_dir=dfs_dir,
-            target_cfg=target_cfg,
-            dfs_cfg=dfs_cfg,
-            seed=args.seed,
-        )
-
-    elif builder == "arxiv_paper_citation":
-        if not standard_artifact_exists(dfs_dir):
-            run([
-                sys.executable,
-                "scripts/prepare/custom/"
-                "build_arxiv_paper_citation_features.py",
-                "--inspect-dir", str(enriched_inspect),
-                "--out-dir", str(dfs_dir),
-                "--max-train", str(dfs_cfg["max_train"]),
-                "--max-val", str(dfs_cfg["max_val"]),
-                "--seed", str(args.seed),
-                "--splits", "train", "val",
-            ])
-
-    elif builder == "arxiv_author_category":
-        if not standard_artifact_exists(combined_dir):
-            run([
-                sys.executable,
-                "scripts/prepare/custom/"
-                "build_arxiv_author_category_features.py",
-                "--inspect-dir", str(enriched_inspect),
-                "--out-dir", str(combined_dir),
-                "--max-train", str(dfs_cfg["max_train"]),
-                "--max-val", str(dfs_cfg["max_val"]),
-                "--seed", str(args.seed),
-            ])
-
-        if (
-            not standard_artifact_exists(dfs_dir)
-            or not standard_artifact_exists(fdhg_dir)
-        ):
-            split_author_category_artifacts(
-                combined_dir,
-                dfs_dir,
-                fdhg_dir,
-            )
-
-    elif builder == "ratebeer_user_place_pairwise":
-        build_generic_dfs(
-            inspect_dir=enriched_inspect,
-            dfs_dir=base_dfs_dir,
-            target_cfg=target_cfg,
-            dfs_cfg=dfs_cfg,
-            seed=args.seed,
-        )
-
-        # Build the real FDHG candidate before pairwise adaptation.
-        # The validation gate may later reject it and select exact DFS
-        # fallback, but candidate construction must remain independent.
-        afd_cfg = cfg.get("afd")
-        if not afd_cfg:
-            raise ValueError(
-                "ratebeer_user_place_pairwise requires an AFD "
-                "configuration."
-            )
-
-        afd_dir.mkdir(parents=True, exist_ok=True)
-        afd_path = afd_dir / "afd_dmax1.csv"
-
-        if not afd_path.exists():
-            afd_cmd = [
-                sys.executable,
-                "scripts/prepare/compute_afd_dmax1.py",
-                "--table",
-                str(
-                    enriched_inspect
-                    / (
-                        "table_"
-                        f"{afd_cfg['entity_table']}.parquet"
-                    )
-                ),
-                "--out",
-                str(afd_path),
-                "--seed",
-                str(args.seed),
-                "--columns",
-                *afd_cfg["columns"],
-            ]
-
-            if afd_cfg.get("max_rows") is not None:
-                afd_cmd.extend([
-                    "--max-rows",
-                    str(afd_cfg["max_rows"]),
+        elif builder == "arxiv_author_category":
+            if not standard_artifact_exists(combined_dir):
+                run([
+                    sys.executable,
+                    "scripts/prepare/custom/"
+                    "build_arxiv_author_category_features.py",
+                    "--inspect-dir", str(enriched_inspect),
+                    "--out-dir", str(combined_dir),
+                    "--max-train", str(dfs_cfg["max_train"]),
+                    "--max-val", str(dfs_cfg["max_val"]),
+                    "--seed", str(args.seed),
                 ])
 
-            exclude_columns = afd_cfg.get(
-                "exclude_columns",
-                [],
-            )
-            if exclude_columns:
-                afd_cmd.extend([
-                    "--exclude-columns",
-                    *exclude_columns,
-                ])
-
-            run(afd_cmd)
-
-        if not standard_artifact_exists(base_fdhg_dir):
-            run([
-                sys.executable,
-                "scripts/prepare/build_fdhg_ambiguity.py",
-                "--inspect-dir",
-                str(enriched_inspect),
-                "--dfs-dir",
-                str(base_dfs_dir),
-                "--afd-stats",
-                str(afd_path),
-                "--out-dir",
-                str(base_fdhg_dir),
-                "--entity-key",
-                target_cfg["entity_key"],
-                "--target-table",
-                afd_cfg["entity_table"],
-            ])
-
-        required_base_fdhg = (
-            base_fdhg_dir
-            / "target_with_dfs_agg_train.parquet"
-        )
-        if not required_base_fdhg.exists():
-            raise FileNotFoundError(
-                f"Missing base FDHG artifact: "
-                f"{required_base_fdhg}"
-            )
-
-        expected_pairwise = (
-            pairwise_dir / "dfs_train_pairwise.parquet"
-        )
-        if not expected_pairwise.exists():
-            run([
-                sys.executable,
-                "scripts/prepare/custom/"
-                "build_ratebeer_user_place_pairwise.py",
-                "--dfs-dir", str(base_dfs_dir),
-                "--fdhg-dir", str(base_fdhg_dir),
-                "--inspect-dir", str(enriched_inspect),
-                "--out-dir", str(pairwise_dir),
-                "--seed", str(args.seed),
-                "--neg-per-pos",
-                str(cfg.get("pairwise", {}).get(
-                    "neg_per_pos",
-                    1,
-                )),
-                "--max-train-rows",
-                str(dfs_cfg["max_train"]),
-                "--max-val-rows",
-                str(dfs_cfg["max_val"]),
-            ])
-
-        if (
-            not standard_artifact_exists(dfs_dir)
-            or not standard_artifact_exists(fdhg_dir)
-        ):
-            normalize_pairwise_artifacts(
-                pairwise_dir,
-                dfs_dir,
-                fdhg_dir,
-            )
-
-    else:
-        raise ValueError(
-            f"Unsupported feature builder: {builder!r}"
-        )
-
-    # 4. Optional AFD/FDHG block
-    # Custom author-category and pairwise builders already produce
-    # both DFS and FDHG artifacts.
-    custom_has_fdhg = builder in {
-        "arxiv_author_category",
-        "ratebeer_user_place_pairwise",
-    }
-
-    if not custom_has_fdhg:
-        afd_cfg = cfg.get("afd")
-
-        if afd_cfg:
-            if not fdhg_inspect.exists():
-                shutil.copytree(
-                    enriched_inspect,
-                    fdhg_inspect,
+            if (
+                not standard_artifact_exists(dfs_dir)
+                or not standard_artifact_exists(fdhg_dir)
+            ):
+                split_author_category_artifacts(
+                    combined_dir,
+                    dfs_dir,
+                    fdhg_dir,
                 )
 
-            if afd_cfg.get("add_entity_alias", True):
-                add_entity_alias(
-                    fdhg_inspect,
-                    entity_table=afd_cfg["entity_table"],
-                    source_key=afd_cfg["entity_table_key"],
-                    target_key=target_cfg["entity_key"],
+        elif builder == "ratebeer_user_place_pairwise":
+            build_generic_dfs(
+                inspect_dir=enriched_inspect,
+                dfs_dir=base_dfs_dir,
+                target_cfg=target_cfg,
+                dfs_cfg=dfs_cfg,
+                seed=args.seed,
+            )
+
+            # Build the real FDHG candidate before pairwise adaptation.
+            # The validation gate may later reject it and select exact DFS
+            # fallback, but candidate construction must remain independent.
+            afd_cfg = cfg.get("afd")
+            if not afd_cfg:
+                raise ValueError(
+                    "ratebeer_user_place_pairwise requires an AFD "
+                    "configuration."
                 )
 
             afd_dir.mkdir(parents=True, exist_ok=True)
@@ -517,15 +403,18 @@ def main() -> None:
                     "scripts/prepare/compute_afd_dmax1.py",
                     "--table",
                     str(
-                        fdhg_inspect
+                        enriched_inspect
                         / (
                             "table_"
                             f"{afd_cfg['entity_table']}.parquet"
                         )
                     ),
-                    "--out", str(afd_path),
-                    "--seed", str(args.seed),
-                    "--columns", *afd_cfg["columns"],
+                    "--out",
+                    str(afd_path),
+                    "--seed",
+                    str(args.seed),
+                    "--columns",
+                    *afd_cfg["columns"],
                 ]
 
                 if afd_cfg.get("max_rows") is not None:
@@ -536,10 +425,7 @@ def main() -> None:
 
                 exclude_columns = afd_cfg.get(
                     "exclude_columns",
-                    [
-                        target_cfg["entity_key"],
-                        afd_cfg["entity_table_key"],
-                    ],
+                    [],
                 )
                 if exclude_columns:
                     afd_cmd.extend([
@@ -549,36 +435,225 @@ def main() -> None:
 
                 run(afd_cmd)
 
-            if not standard_artifact_exists(fdhg_dir):
+            if not standard_artifact_exists(base_fdhg_dir):
                 run([
                     sys.executable,
                     "scripts/prepare/build_fdhg_ambiguity.py",
-                    "--inspect-dir", str(fdhg_inspect),
-                    "--dfs-dir", str(dfs_dir),
-                    "--afd-stats", str(afd_path),
-                    "--out-dir", str(fdhg_dir),
-                    "--entity-key", target_cfg["entity_key"],
-                    "--target-table", afd_cfg["entity_table"],
+                    "--inspect-dir",
+                    str(enriched_inspect),
+                    "--dfs-dir",
+                    str(base_dfs_dir),
+                    "--afd-stats",
+                    str(afd_path),
+                    "--out-dir",
+                    str(base_fdhg_dir),
+                    "--entity-key",
+                    target_cfg["entity_key"],
+                    "--target-table",
+                    afd_cfg["entity_table"],
                 ])
-        else:
-            if not cfg.get("fallback_to_dfs", False):
-                raise ValueError(
-                    "No AFD configuration was provided. "
-                    "Set fallback_to_dfs: true for an "
-                    "intentional DFS fallback."
+
+            required_base_fdhg = (
+                base_fdhg_dir
+                / "target_with_dfs_agg_train.parquet"
+            )
+            if not required_base_fdhg.exists():
+                raise FileNotFoundError(
+                    f"Missing base FDHG artifact: "
+                    f"{required_base_fdhg}"
                 )
 
-            print(
-                "[fallback] No FDHG candidate selected; "
-                "using the exact DFS artifact."
+            expected_pairwise = (
+                pairwise_dir / "dfs_train_pairwise.parquet"
             )
-            fdhg_dir = dfs_dir
+            if not expected_pairwise.exists():
+                run([
+                    sys.executable,
+                    "scripts/prepare/custom/"
+                    "build_ratebeer_user_place_pairwise.py",
+                    "--dfs-dir", str(base_dfs_dir),
+                    "--fdhg-dir", str(base_fdhg_dir),
+                    "--inspect-dir", str(enriched_inspect),
+                    "--out-dir", str(pairwise_dir),
+                    "--seed", str(args.seed),
+                    "--neg-per-pos",
+                    str(cfg.get("pairwise", {}).get(
+                        "neg_per_pos",
+                        1,
+                    )),
+                    "--max-train-rows",
+                    str(dfs_cfg["max_train"]),
+                    "--max-val-rows",
+                    str(dfs_cfg["max_val"]),
+                ])
 
-    if args.prepare_only:
+            if (
+                not standard_artifact_exists(dfs_dir)
+                or not standard_artifact_exists(fdhg_dir)
+            ):
+                normalize_pairwise_artifacts(
+                    pairwise_dir,
+                    dfs_dir,
+                    fdhg_dir,
+                )
+
+        else:
+            raise ValueError(
+                f"Unsupported feature builder: {builder!r}"
+            )
+
+        # 4. Optional AFD/FDHG block
+        # Custom author-category and pairwise builders already produce
+        # both DFS and FDHG artifacts.
+        custom_has_fdhg = builder in {
+            "arxiv_author_category",
+            "ratebeer_user_place_pairwise",
+        }
+
+        if not custom_has_fdhg:
+            afd_cfg = cfg.get("afd")
+
+            if afd_cfg:
+                if not fdhg_inspect.exists():
+                    shutil.copytree(
+                        enriched_inspect,
+                        fdhg_inspect,
+                    )
+
+                if afd_cfg.get("add_entity_alias", True):
+                    add_entity_alias(
+                        fdhg_inspect,
+                        entity_table=afd_cfg["entity_table"],
+                        source_key=afd_cfg["entity_table_key"],
+                        target_key=target_cfg["entity_key"],
+                    )
+
+                afd_dir.mkdir(parents=True, exist_ok=True)
+                afd_path = afd_dir / "afd_dmax1.csv"
+
+                if not afd_path.exists():
+                    afd_cmd = [
+                        sys.executable,
+                        "scripts/prepare/compute_afd_dmax1.py",
+                        "--table",
+                        str(
+                            fdhg_inspect
+                            / (
+                                "table_"
+                                f"{afd_cfg['entity_table']}.parquet"
+                            )
+                        ),
+                        "--out", str(afd_path),
+                        "--seed", str(args.seed),
+                        "--columns", *afd_cfg["columns"],
+                    ]
+
+                    if afd_cfg.get("max_rows") is not None:
+                        afd_cmd.extend([
+                            "--max-rows",
+                            str(afd_cfg["max_rows"]),
+                        ])
+
+                    exclude_columns = afd_cfg.get(
+                        "exclude_columns",
+                        [
+                            target_cfg["entity_key"],
+                            afd_cfg["entity_table_key"],
+                        ],
+                    )
+                    if exclude_columns:
+                        afd_cmd.extend([
+                            "--exclude-columns",
+                            *exclude_columns,
+                        ])
+
+                    run(afd_cmd)
+
+                if not standard_artifact_exists(fdhg_dir):
+                    run([
+                        sys.executable,
+                        "scripts/prepare/build_fdhg_ambiguity.py",
+                        "--inspect-dir", str(fdhg_inspect),
+                        "--dfs-dir", str(dfs_dir),
+                        "--afd-stats", str(afd_path),
+                        "--out-dir", str(fdhg_dir),
+                        "--entity-key", target_cfg["entity_key"],
+                        "--target-table", afd_cfg["entity_table"],
+                    ])
+            else:
+                if not cfg.get("fallback_to_dfs", False):
+                    raise ValueError(
+                        "No AFD configuration was provided. "
+                        "Set fallback_to_dfs: true for an "
+                        "intentional DFS fallback."
+                    )
+
+                print(
+                    "[fallback] No FDHG candidate selected; "
+                    "using the exact DFS artifact."
+                )
+                fdhg_dir = dfs_dir
+
+        if args.prepare_only:
+            print(
+                f"\nPrepared task artifacts under: {work_root}"
+            )
+            return
+
+
+    else:
+        required_dfs = [
+            dfs_dir / "target_with_dfs_agg_train.parquet",
+            dfs_dir / "target_with_dfs_agg_val.parquet",
+        ]
+        required_fdhg = [
+            fdhg_dir / "target_with_dfs_agg_train.parquet",
+            fdhg_dir / "target_with_dfs_agg_val.parquet",
+        ]
+
+        missing_dfs = [
+            path for path in required_dfs
+            if not path.exists()
+        ]
+
+        if missing_dfs:
+            missing_text = "\n".join(
+                f" - {path}" for path in missing_dfs
+            )
+            raise FileNotFoundError(
+                "Cannot run --evaluate-only because DFS "
+                "artifacts are missing:\n"
+                f"{missing_text}\n"
+                "Run once with --prepare-only first."
+            )
+
+        missing_fdhg = [
+            path for path in required_fdhg
+            if not path.exists()
+        ]
+
+        if missing_fdhg:
+            if cfg.get("fallback_to_dfs", False):
+                print(
+                    "[evaluate-only] Reusing DFS as the "
+                    "intentional FDHG fallback."
+                )
+                fdhg_dir = dfs_dir
+            else:
+                missing_text = "\n".join(
+                    f" - {path}" for path in missing_fdhg
+                )
+                raise FileNotFoundError(
+                    "Cannot run --evaluate-only because FDHG "
+                    "artifacts are missing:\n"
+                    f"{missing_text}\n"
+                    "Run once with --prepare-only first."
+                )
+
         print(
-            f"\nPrepared task artifacts under: {work_root}"
+            "[evaluate-only] Reusing prepared artifacts under: "
+            f"{work_root}"
         )
-        return
 
     os.environ.setdefault(
         "TABPFN_ALLOW_CPU_LARGE_DATASET",
@@ -629,6 +704,15 @@ def main() -> None:
             / f"seed{args.seed}"
         )
 
+        evaluator_variant = variant
+        if (
+            evaluation_backend == "catboost"
+            and variant == "fdhg_dmax1"
+        ):
+            # Match legacy CatBoost metric metadata while
+            # retaining the descriptive output directory.
+            evaluator_variant = "fdhg"
+
         evaluation_command = [
             sys.executable,
             evaluator,
@@ -645,7 +729,7 @@ def main() -> None:
             "--output-dir", str(out_dir),
             "--dataset", args.dataset,
             "--task", args.task,
-            "--variant", variant,
+            "--variant", evaluator_variant,
             "--label-col", cfg["label_col"],
             "--drop-cols", drop_cols,
             "--seed", str(args.seed),
