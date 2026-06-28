@@ -433,6 +433,8 @@ tasks:
       drop_cols:
       - CREATIONTIMESTAMP
       - SALESDOCUMENT
+      backend: catboost
+      task_type: multiclass
     expected_gate: select
   rel-salt/sales-incoterms:
     builder: generic_dfs

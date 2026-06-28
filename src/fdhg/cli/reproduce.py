@@ -585,6 +585,12 @@ def main() -> None:
         "1",
     )
 
+    evaluation_cfg = cfg.get("evaluation", {})
+    evaluation_backend = evaluation_cfg.get(
+        "backend",
+        "tabpfn",
+    )
+
     evaluator = {
         "binary": (
             "scripts/evaluate/"
@@ -596,7 +602,11 @@ def main() -> None:
         ),
         "multiclass": (
             "scripts/evaluate/"
-            "evaluate_multiclass_tabpfn.py"
+            + (
+                "evaluate_multiclass_catboost.py"
+                if evaluation_backend == "catboost"
+                else "evaluate_multiclass_tabpfn.py"
+            )
         ),
     }[cfg["problem_type"]]
 
@@ -606,7 +616,7 @@ def main() -> None:
     result_root = (
         ROOT
         / "results"
-        / f"{task_key}_tabpfn"
+        / f"{task_key}_{evaluation_backend}"
     )
 
     for variant, feature_root in [
@@ -619,7 +629,7 @@ def main() -> None:
             / f"seed{args.seed}"
         )
 
-        run([
+        evaluation_command = [
             sys.executable,
             evaluator,
             "--train-parquet",
@@ -638,9 +648,16 @@ def main() -> None:
             "--variant", variant,
             "--label-col", cfg["label_col"],
             "--drop-cols", drop_cols,
-            "--device", args.device,
             "--seed", str(args.seed),
-        ])
+        ]
+
+        if evaluation_backend != "catboost":
+            evaluation_command.extend([
+                "--device",
+                args.device,
+            ])
+
+        run(evaluation_command)
 
     print(
         "\nCompleted end-to-end reproduction: "
