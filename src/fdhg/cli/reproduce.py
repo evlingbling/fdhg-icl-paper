@@ -215,6 +215,137 @@ def build_generic_dfs(
     ])
 
 
+
+def afd_fit_artifact_exists(afd_dir: Path) -> bool:
+    """Return whether all train-only AFD fit artifacts are complete."""
+    return all(
+        path.exists()
+        for path in (
+            afd_dir / "afd_fit_table.parquet",
+            afd_dir / "afd_fit_manifest.json",
+            afd_dir / "_SUCCESS",
+        )
+    )
+
+
+def build_train_only_afd_fit_table(
+    *,
+    inspect_dir: Path,
+    afd_dir: Path,
+    afd_cfg: dict,
+    target_cfg: dict,
+) -> Path:
+    """Build and return the entity rows eligible for AFD fitting."""
+    afd_dir.mkdir(parents=True, exist_ok=True)
+
+    fit_path = afd_dir / "afd_fit_table.parquet"
+    manifest_path = afd_dir / "afd_fit_manifest.json"
+
+    if afd_fit_artifact_exists(afd_dir):
+        print(
+            "[afd-fit] Reusing train-only AFD fit table:",
+            fit_path,
+        )
+        return fit_path
+
+    entity_table = afd_cfg["entity_table"]
+    entity_path = (
+        inspect_dir / f"table_{entity_table}.parquet"
+    )
+    target_train_path = inspect_dir / "target_train.parquet"
+
+    entity_key = afd_cfg.get(
+        "fit_entity_key",
+        afd_cfg.get(
+            "entity_table_key",
+            target_cfg["entity_key"],
+        ),
+    )
+    target_entity_key = target_cfg["entity_key"]
+
+    command = [
+        sys.executable,
+        "scripts/prepare/build_afd_fit_table.py",
+        "--entity-table",
+        str(entity_path),
+        "--target-train",
+        str(target_train_path),
+        "--out",
+        str(fit_path),
+        "--manifest",
+        str(manifest_path),
+        "--entity-key",
+        entity_key,
+        "--target-entity-key",
+        target_entity_key,
+    ]
+
+    fit_entity_time_col = afd_cfg.get(
+        "fit_entity_time_col"
+    )
+    fit_target_time_col = afd_cfg.get(
+        "fit_target_time_col"
+    )
+
+    if bool(fit_entity_time_col) != bool(
+        fit_target_time_col
+    ):
+        raise ValueError(
+            "AFD configuration must provide both "
+            "`fit_entity_time_col` and "
+            "`fit_target_time_col`, or neither."
+        )
+
+    if fit_entity_time_col:
+        command.extend(
+            [
+                "--entity-time-col",
+                fit_entity_time_col,
+                "--target-time-col",
+                fit_target_time_col,
+            ]
+        )
+
+    run(command)
+
+    if not afd_fit_artifact_exists(afd_dir):
+        raise FileNotFoundError(
+            "Train-only AFD fit-table generation did not "
+            f"complete successfully under {afd_dir}"
+        )
+
+    return fit_path
+
+
+def copytree_hardlink(
+    source: Path,
+    destination: Path,
+) -> None:
+    """Copy a tree using hard links where possible."""
+    source = Path(source)
+    destination = Path(destination)
+
+    if not source.exists():
+        raise FileNotFoundError(
+            f"Source directory does not exist: {source}"
+        )
+
+    if destination.exists():
+        shutil.rmtree(destination)
+
+    def link_or_copy(src: str, dst: str) -> str:
+        try:
+            os.link(src, dst)
+            return dst
+        except OSError:
+            return shutil.copy2(src, dst)
+
+    shutil.copytree(
+        source,
+        destination,
+        copy_function=link_or_copy,
+    )
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Run an end-to-end FDHG reproduction task."
@@ -402,13 +533,7 @@ def main() -> None:
                     sys.executable,
                     "scripts/prepare/compute_afd_dmax1.py",
                     "--table",
-                    str(
-                        enriched_inspect
-                        / (
-                            "table_"
-                            f"{afd_cfg['entity_table']}.parquet"
-                        )
-                    ),
+                    str(afd_fit_path),
                     "--out",
                     str(afd_path),
                     "--seed",
@@ -451,6 +576,8 @@ def main() -> None:
                     target_cfg["entity_key"],
                     "--target-table",
                     afd_cfg["entity_table"],
+                    "--fit-table",
+                    str(afd_fit_path),
                 ])
 
             required_base_fdhg = (
@@ -515,7 +642,7 @@ def main() -> None:
 
             if afd_cfg:
                 if not fdhg_inspect.exists():
-                    shutil.copytree(
+                    copytree_hardlink(
                         enriched_inspect,
                         fdhg_inspect,
                     )
@@ -529,6 +656,14 @@ def main() -> None:
                     )
 
                 afd_dir.mkdir(parents=True, exist_ok=True)
+
+                afd_fit_path = build_train_only_afd_fit_table(
+                    inspect_dir=fdhg_inspect,
+                    afd_dir=afd_dir,
+                    afd_cfg=afd_cfg,
+                    target_cfg=target_cfg,
+                )
+
                 afd_path = afd_dir / "afd_dmax1.csv"
 
                 if not afd_path.exists():
@@ -536,13 +671,7 @@ def main() -> None:
                         sys.executable,
                         "scripts/prepare/compute_afd_dmax1.py",
                         "--table",
-                        str(
-                            fdhg_inspect
-                            / (
-                                "table_"
-                                f"{afd_cfg['entity_table']}.parquet"
-                            )
-                        ),
+                        str(afd_fit_path),
                         "--out", str(afd_path),
                         "--seed", str(args.seed),
                         "--columns", *afd_cfg["columns"],
@@ -579,6 +708,7 @@ def main() -> None:
                         "--out-dir", str(fdhg_dir),
                         "--entity-key", target_cfg["entity_key"],
                         "--target-table", afd_cfg["entity_table"],
+                        "--fit-table", str(afd_fit_path),
                     ])
             else:
                 if not cfg.get("fallback_to_dfs", False):
