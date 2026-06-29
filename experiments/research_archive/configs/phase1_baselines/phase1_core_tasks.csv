@@ -1,0 +1,4 @@
+dataset,task,target_type,label_col,primary_role
+rel-stack,user-badge,classification,target,main_strong_positive
+rel-amazon,item-churn,classification,churn,dmax2_positive
+rel-amazon,item-ltv,regression,ltv,second_positive_regression

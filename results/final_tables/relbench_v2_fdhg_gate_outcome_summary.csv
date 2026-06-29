@@ -1,0 +1,7 @@
+dataset,gate_outcome,n_tasks
+rel-arxiv,FALLBACK,1
+rel-arxiv,SELECT,1
+rel-ratebeer,FALLBACK,4
+rel-ratebeer,SELECT,2
+rel-salt,FALLBACK,2
+rel-salt,SELECT,6

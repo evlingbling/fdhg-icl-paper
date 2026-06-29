@@ -311,3 +311,53 @@ fdhg-reproduce \
 
 Task-specific configurations are stored in `configs/reproduction/tasks.yaml`.
 Generated artifacts are written under `outputs/e2e/<dataset>_<task>/` and `results/<dataset>_<task>_tabpfn/`.
+
+## Paper-to-code reproducibility map
+
+The repository contains both executable reproduction paths and curated tables imported from the broader development project. These are not currently equivalent in coverage.
+
+Before claiming full paper-table reproducibility, run:
+
+```bash
+python scripts/reproduce/audit_paper_artifacts.py
+```
+
+The audit reports which raw metric files and experiment generators are present. The detailed mapping is documented in:
+
+```text
+docs/paper_to_code_map.md
+docs/reproducibility_gap_report.md
+configs/experiments/paper_artifact_manifest.yaml
+```
+
+To regenerate all paper tables after restoring the declared raw inputs:
+
+```bash
+bash scripts/reproduce/reproduce_paper_tables.sh
+```
+
+At the time this map was added, the configured dmax1 RelBench path was executable with external data and model dependencies, while several broader dmax2, feature-budget, synthetic, temporal-diagnostic, and subgroup results were available only as curated tables or aggregation references. See the mapping document for the exact status of each claim.
+
+## Recovered broader experiment archive
+
+The broader research scripts recovered from the development repository are preserved under:
+
+```text
+experiments/research_archive/
+```
+
+This archive includes the original dmax2, supervised top-K, random same-budget, temporal, feature-budget, synthetic, oracle-gap, and uniqueness-stress experiment scripts. Compact raw metrics needed to rebuild the paper tables are committed; large RelBench caches and intermediate Parquet matrices are not.
+
+See:
+
+```text
+docs/paper_to_code_map.md
+docs/reproducibility_gap_report.md
+```
+
+Rebuild and audit the compact paper artifacts with:
+
+```bash
+bash scripts/reproduce/reproduce_paper_tables.sh
+python scripts/reproduce/audit_paper_artifacts.py
+```

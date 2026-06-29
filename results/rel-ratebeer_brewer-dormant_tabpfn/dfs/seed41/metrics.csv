@@ -1,0 +1,2 @@
+dataset,task,variant,seed,n_train_used,n_val_used,n_features,accuracy,roc_auc,average_precision,log_loss,train_parquet,val_parquet
+rel-ratebeer,brewer-dormant,dfs,41,10000,2000,5,0.7185,0.7748865570051049,0.6075617374703607,0.5510913515875054,/home/evelyn/fdhg-icl-paper/outputs/e2e/rel-ratebeer_brewer-dormant/dfs/target_with_dfs_agg_train.parquet,/home/evelyn/fdhg-icl-paper/outputs/e2e/rel-ratebeer_brewer-dormant/dfs/target_with_dfs_agg_val.parquet

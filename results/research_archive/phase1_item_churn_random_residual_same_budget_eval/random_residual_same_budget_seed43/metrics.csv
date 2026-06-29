@@ -1,0 +1,2 @@
+dataset,task,variant,seed,n_train_used,n_val_used,n_features,accuracy,roc_auc,average_precision,log_loss,train_parquet,val_parquet
+rel-amazon,item-churn,random_residual_same_budget,43,10000,2000,38,0.676,0.7593419014268863,0.631048642610714,0.6114204060664823,outputs/phase1_random_residual/rel-amazon_item-churn_sample/target_with_random_residual_same_budget_seed43_train.parquet,outputs/phase1_random_residual/rel-amazon_item-churn_sample/target_with_random_residual_same_budget_seed43_val.parquet

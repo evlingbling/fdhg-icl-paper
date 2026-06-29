@@ -1,0 +1,2 @@
+dataset,task,variant,seed,n_train_used,n_val_used,n_features,rmse,mae,r2,train_parquet,val_parquet
+rel-ratebeer,user-count,fdhg_dmax1,44,10000,2000,17,41.67109869177757,12.964287450924516,0.350865653157561,/home/evelyn/fdhg-icl-paper/outputs/e2e/rel-ratebeer_user-count/fdhg/target_with_dfs_agg_train.parquet,/home/evelyn/fdhg-icl-paper/outputs/e2e/rel-ratebeer_user-count/fdhg/target_with_dfs_agg_val.parquet

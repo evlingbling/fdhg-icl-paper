@@ -1,0 +1,45 @@
+{
+  "mean_metrics": {
+    "accuracy": {
+      "oracle": 0.833,
+      "random_top4": 0.83355,
+      "ranker_top4": 0.833,
+      "weak_price_only": 0.834
+    },
+    "roc_auc": {
+      "oracle": 0.6548672283072166,
+      "random_top4": 0.5852340045864732,
+      "ranker_top4": 0.6528008326432598,
+      "weak_price_only": 0.537488510215392
+    },
+    "average_precision": {
+      "oracle": 0.28117892652178283,
+      "random_top4": 0.23419060878201137,
+      "ranker_top4": 0.27888011433146387,
+      "weak_price_only": 0.2041293641695274
+    },
+    "log_loss": {
+      "oracle": 0.4332957508422717,
+      "random_top4": 0.44558250720372244,
+      "ranker_top4": 0.4336645632294768,
+      "weak_price_only": 0.44965922631173166
+    }
+  },
+  "mean_gaps": {
+    "log_loss_gap_vs_oracle": {
+      "random_top4": 0.012286756361450782,
+      "ranker_top4": 0.0003688123872050836,
+      "weak_price_only": 0.01636347546946
+    },
+    "roc_auc_gap_vs_oracle": {
+      "random_top4": 0.06963322372074326,
+      "ranker_top4": 0.0020663956639566383,
+      "weak_price_only": 0.11737871809182453
+    },
+    "average_precision_gap_vs_oracle": {
+      "random_top4": 0.04698831773977147,
+      "ranker_top4": 0.00229881219031898,
+      "weak_price_only": 0.07704956235225545
+    }
+  }
+}

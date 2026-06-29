@@ -1,0 +1,2 @@
+dataset,task,variant,n_runs,seeds,n_features_mean,n_val_used_mean,accuracy_mean,accuracy_std,roc_auc_mean,roc_auc_std,average_precision_mean,average_precision_std,log_loss_mean,log_loss_std
+rel-amazon,item-churn,random_residual_same_budget,4,"41,42,43,44",38.0,2000.0,0.676875,0.0017969882210706447,0.7593266305915639,0.00033093043654479375,0.6299232368954746,0.0012178097303186843,0.6115279419847242,0.000360883482318665

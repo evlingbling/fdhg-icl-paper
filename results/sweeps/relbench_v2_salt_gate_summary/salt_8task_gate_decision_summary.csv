@@ -1,0 +1,4 @@
+task_group,gate_outcome,n_tasks
+item,FALLBACK,2
+item,SELECT,1
+sales,SELECT,5

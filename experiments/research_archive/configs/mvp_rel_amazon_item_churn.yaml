@@ -1,0 +1,235 @@
+project: fdhg_icl
+experiment_name: mvp_rel_amazon_item_churn
+seed: 41
+
+real_task:
+  dataset: rel-amazon
+  task: item-churn
+  target_table: product
+  entity_key: product_id
+  target_col: churn
+  time_col: timestamp
+  model: tabpfn
+  device: cuda
+  max_train_rows: 10000
+  max_val_rows: 2000
+
+paths:
+  relbench_inspect_dir: outputs/relbench_inspect/rel-amazon_item-churn
+  dfs_agg_dir: outputs/dfs_agg/rel-amazon_item-churn_sample
+  ambiguity_dir: outputs/ambiguity_features/rel-amazon_item-churn_sample
+  fdhg_heuristic_dir: outputs/fdhg_heuristic/rel-amazon_item-churn_sample
+  mvp_result_dir: results/mvp_rel_amazon_item_churn
+  target_only_result: results/week1/target_only_rel-amazon_item-churn_tabpfn_seed41.json
+  dfs_result: results/dfs_agg/dfs_agg_rel-amazon_item-churn_tabpfn_seed41.json
+  fdhg_result: results/fdhg_heuristic/dfs_agg_rel-amazon_item-churn_tabpfn_seed41.json
+
+target_only:
+  source_table: product
+  feature_count: 15
+  features:
+    - brand
+    - title
+    - description
+    - price
+    - category__0
+    - category__1
+    - category__2
+    - category__3
+    - category__4
+    - category__5
+    - category__6
+    - category__7
+    - category__8
+    - category__9
+    - category__10
+
+dfs_aggregation:
+  child_table: review
+  child_fk: product_id
+  child_time_col: review_time
+  numeric_col: rating
+  temporal_predicate: review.review_time <= target.timestamp
+  feature_block: aggregation
+  generated_features:
+    - f_review_count
+    - f_review_rating_mean
+    - f_review_rating_std
+    - f_review_rating_max
+    - f_review_days_since_last
+  missing_indicators:
+    - f_review_rating_mean__is_missing
+    - f_review_rating_std__is_missing
+    - f_review_rating_max__is_missing
+    - f_review_days_since_last__is_missing
+
+afd:
+  table: product
+  dmax: 1
+  columns:
+    - product_id
+    - category
+    - brand
+    - price
+  afd_stats_path: outputs/afd_stats/rel-amazon_item-churn/product_afd_dmax1_core_sample50k.csv
+  score_components:
+    - r_del
+    - r_ent
+    - r_pair
+    - r_tuple
+    - lhs_uniqueness
+    - lhs_collision
+    - lhs_support_repeated
+    - coverage
+    - rhs_entropy
+  pruning:
+    id_columns:
+      - product_id
+    categorical_rhs:
+      - category
+      - brand
+    min_r_del: 0.6
+    min_coverage: 0.5
+    min_lhs_support_repeated: 0.05
+    max_lhs_uniqueness: 0.98
+  selected_edges:
+    - lhs: brand
+      rhs: category
+      edge_type: afd
+      edge_weight: 0.711311
+      r_del: 0.867621
+      r_ent: 0.953750
+      lhs_uniqueness: 0.798457
+      lhs_support_repeated: 0.313184
+      coverage: 0.96148
+
+ambiguity_features:
+  edge: brand -> category
+  feature_block: ambiguity
+  generated_features:
+    - f_amb__brand_to_category__majconf
+    - f_amb__brand_to_category__entropy
+    - f_amb__brand_to_category__conflict_count
+    - f_amb__brand_to_category__support_count
+  missing_indicators:
+    - f_amb__brand_to_category__majconf__is_missing
+    - f_amb__brand_to_category__entropy__is_missing
+    - f_amb__brand_to_category__conflict_count__is_missing
+    - f_amb__brand_to_category__support_count__is_missing
+
+feature_selection:
+  method: heuristic
+  K: 128
+  n_candidates: 17
+  n_selected: 17
+  scoring_terms:
+    positive:
+      - reliability
+      - coverage
+      - ambiguity_bonus
+    negative:
+      - uniqueness_penalty
+      - path_length
+      - cost
+      - redundancy_penalty
+      - leakage_risk
+  manifest: outputs/fdhg_heuristic/rel-amazon_item-churn_sample/fdhg_heuristic_feature_manifest.csv
+  selected_features: outputs/fdhg_heuristic/rel-amazon_item-churn_sample/selected_features.txt
+
+results:
+  metric_direction:
+    accuracy: higher
+    roc_auc: higher
+    average_precision: higher
+    log_loss: lower
+  target_only:
+    n_features: 15
+    accuracy: 0.5505
+    roc_auc: 0.5899417978541602
+    average_precision: 0.494174602639038
+    log_loss: 0.6798111286290894
+  dfs_agg5_review:
+    n_features: 24
+    accuracy: 0.6785
+    roc_auc: 0.7580196267448532
+    average_precision: 0.6366809150046987
+    log_loss: 0.5997747833017442
+  fdhg_heuristic_v0:
+    n_features: 32
+    accuracy: 0.6855
+    roc_auc: 0.7589127781216923
+    average_precision: 0.634493270855889
+    log_loss: 0.5985493308525666
+
+synthetic_prior:
+  generator: scripts/generate_minimal_synthetic_prior.py
+  prior_root: outputs/synthetic_prior
+  seeds:
+    - 41
+    - 42
+    - 43
+    - 44
+    - 45
+    - 46
+    - 47
+    - 48
+    - 49
+    - 50
+  n_users: 3000
+  n_products: 1500
+  n_events: 30000
+  tables:
+    - users
+    - products
+    - events
+  ground_truth_fds:
+    - table: users
+      lhs: zip
+      rhs: city
+      injected_noise: 0.05
+    - table: products
+      lhs: brand
+      rhs: category
+      injected_noise: 0.10
+  label_generating_programs:
+    - product_id <- events.product_id :: count(event_id) before cutoff
+    - product_id <- events.product_id :: mean(rating) before cutoff
+    - products.brand -> products.category :: ambiguity_entropy
+    - products.price :: identity
+
+calibrator:
+  model: logistic_regression
+  output_dir: outputs/calibrator/logreg_minimal
+  n_examples: 120
+  n_positive: 20
+  n_negative: 100
+  test_accuracy: 1.0
+  test_roc_auc: 1.0
+  test_average_precision: 1.0
+  test_log_loss: 0.034050305547346345
+  input_features:
+    - r_del
+    - r_ent
+    - r_pair
+    - r_tuple
+    - lhs_uniqueness
+    - lhs_collision
+    - lhs_support_repeated
+    - coverage
+    - rhs_entropy
+    - n_lhs_values
+    - n_rhs_values
+
+status:
+  mvp_completed: true
+  completed_steps:
+    - RelBench loader
+    - target-only baseline
+    - DFS-style one-to-many aggregation
+    - dmax=1 AFD statistics
+    - AFD edge selection
+    - ambiguity feature generation
+    - K=128 heuristic feature manifest
+    - target-only vs DFS vs FDHG comparison
+    - minimal synthetic prior generator
+    - logistic-regression FD calibrator

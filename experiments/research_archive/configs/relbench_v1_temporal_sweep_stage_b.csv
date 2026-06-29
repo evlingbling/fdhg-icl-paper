@@ -1,0 +1,9 @@
+dataset,task,target_key,target_time_col,child_table,numeric_col,target_table,label_col,notes
+rel-f1,driver-dnf,,,,,,,temporal diagnostic known strong last-state
+rel-event,user-ignore,user,timestamp,event_interest,not_interested,,target,temporal event history
+rel-event,user-repeat,user,timestamp,event_interest,interested,,target,temporal event history
+rel-amazon,user-churn,customer_id,timestamp,review,rating,,churn,amazon churn temporal
+rel-amazon,item-churn,product_id,timestamp,review,rating,,churn,amazon item churn temporal
+rel-stack,user-engagement,OwnerUserId,timestamp,posts,PostTypeId,,contribution,stack engagement temporal
+rel-stack,post-votes,PostId,timestamp,votes,VoteTypeId,,popularity_ge2,stack votes temporal binary derived
+rel-trial,study-adverse,nct_id,timestamp,reported_event_totals,subjects_affected,,adverse_binary,trial adverse temporal binary derived

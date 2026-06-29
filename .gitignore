@@ -21,3 +21,22 @@ artifacts/
 .env
 .env.*
 .DS_Store
+
+# Large generated relational artifacts
+outputs/e2e/
+**/inspect/
+**/inspect_enriched/
+**/*.parquet
+
+# Local caches and model artifacts
+.cache/
+cache/
+wandb/
+**/*.pkl
+**/*.joblib
+**/*.pt
+**/*.ckpt
+
+# Local experiment backups and logs
+*.bak_*
+*.log

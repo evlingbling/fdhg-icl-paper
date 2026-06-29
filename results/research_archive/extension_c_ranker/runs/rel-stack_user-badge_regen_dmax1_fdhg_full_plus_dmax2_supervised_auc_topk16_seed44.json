@@ -1,0 +1,13 @@
+{
+  "seed": 44,
+  "train_path": "results/extension_c_ranker/features/rel_stack_user_badge_regen_dmax1_fdhg_full_plus_dmax2_supervised_auc_topk16_seed44/train_combined.parquet",
+  "val_path": "results/extension_c_ranker/features/rel_stack_user_badge_regen_dmax1_fdhg_full_plus_dmax2_supervised_auc_topk16_seed44/val_combined.parquet",
+  "n_train": 10000,
+  "n_val": 247398,
+  "n_features": 39,
+  "predict_batch_size": 5000,
+  "accuracy": 0.972202685551217,
+  "roc_auc": 0.8839243556379892,
+  "average_precision": 0.31993544087869225,
+  "log_loss": 0.09510676826463813
+}

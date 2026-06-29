@@ -1,0 +1,9 @@
+dataset,task,target_key,target_time_col,child_table,child_key,child_time_col,numeric_col,label_col,notes
+rel-f1,driver-dnf,driverId,date,results,driverId,date,positionOrder,dnf,temporal diagnostic anchor
+rel-event,user-ignore,user,timestamp,event_interest,user,timestamp,not_interested,target,event temporal history
+rel-event,user-repeat,user,timestamp,event_interest,user,timestamp,interested,target,event temporal history
+rel-amazon,user-churn,customer_id,timestamp,review,customer_id,review_time,rating,churn,amazon user churn
+rel-amazon,item-churn,product_id,timestamp,review,product_id,review_time,rating,churn,amazon item churn
+rel-stack,user-engagement,OwnerUserId,timestamp,posts,OwnerUserId,CreationDate,PostTypeId,contribution,stack user engagement
+rel-stack,post-votes,PostId,timestamp,votes,PostId,CreationDate,VoteTypeId,popularity_ge2,stack post votes binary derived
+rel-trial,study-adverse,nct_id,timestamp,reported_event_totals,nct_id,date,subjects_affected,adverse_binary,trial adverse binary derived

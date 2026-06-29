@@ -1,0 +1,3 @@
+dataset,task,target_key,target_time_col,base_child_table,base_child_key,base_child_time_col,pivot_key,second_table,second_key,second_time_col,numeric_col,label_col,notes
+rel-amazon,item-churn,product_id,timestamp,review,product_id,review_time,customer_id,review,customer_id,review_time,rating,churn,item -> review -> customer review history
+rel-amazon,item-ltv,product_id,timestamp,review,product_id,review_time,customer_id,review,customer_id,review_time,rating,ltv,item -> review -> customer review history

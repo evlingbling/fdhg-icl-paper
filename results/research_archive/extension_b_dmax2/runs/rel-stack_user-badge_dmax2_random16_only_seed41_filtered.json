@@ -1,0 +1,13 @@
+{
+  "seed": 41,
+  "train_path": "results/extension_b_dmax2/features/rel_stack_user_badge_dmax2_random_same_budget_seed41_topk16/train_combined.parquet",
+  "val_path": "results/extension_b_dmax2/features/rel_stack_user_badge_dmax2_random_same_budget_seed41_topk16/val_combined.parquet",
+  "n_train": 10000,
+  "n_val": 247398,
+  "n_features": 16,
+  "predict_batch_size": 5000,
+  "accuracy": 0.97187123582244,
+  "roc_auc": 0.8383768915790727,
+  "average_precision": 0.28485488399319714,
+  "log_loss": 0.10165112604651981
+}

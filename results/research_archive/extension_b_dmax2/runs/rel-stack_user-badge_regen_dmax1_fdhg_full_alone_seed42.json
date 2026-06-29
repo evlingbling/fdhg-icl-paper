@@ -1,0 +1,13 @@
+{
+  "seed": 42,
+  "train_path": "results/extension_b_dmax2/features/rel_stack_user_badge_regen_dmax1_fdhg_full/train_combined.parquet",
+  "val_path": "results/extension_b_dmax2/features/rel_stack_user_badge_regen_dmax1_fdhg_full/val_combined.parquet",
+  "n_train": 10000,
+  "n_val": 247398,
+  "n_features": 23,
+  "predict_batch_size": 5000,
+  "accuracy": 0.9719439930799764,
+  "roc_auc": 0.879981368896094,
+  "average_precision": 0.309430241081467,
+  "log_loss": 0.09619154846555078
+}

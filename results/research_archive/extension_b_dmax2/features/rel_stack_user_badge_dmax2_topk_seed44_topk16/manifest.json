@@ -1,0 +1,28 @@
+{
+  "dataset": "rel-stack",
+  "task": "user-badge",
+  "variant": "dmax2_topk",
+  "seed": 44,
+  "top_k": 16,
+  "n_paths": 5,
+  "n_raw_features": 30,
+  "n_selected_features": 16,
+  "selected_features": [
+    "dmax2_comments_UserId_PostId_posts__nunique_Body",
+    "dmax2_comments_UserId_PostId_posts__count_distinct_PostId",
+    "dmax2_postHistory_UserId_PostId_posts__nunique_Body",
+    "dmax2_postHistory_UserId_PostId_posts__count_distinct_PostId",
+    "dmax2_comments_UserId_PostId_posts__nunique_Title",
+    "dmax2_comments_UserId_PostId_posts__nunique_Tags",
+    "dmax2_posts_OwnerUserId_ParentId_posts__count_distinct_ParentId",
+    "dmax2_posts_OwnerUserId_ParentId_posts__nunique_Title",
+    "dmax2_posts_OwnerUserId_ParentId_posts__nunique_Body",
+    "dmax2_postHistory_UserId_PostId_posts__nunique_Title",
+    "dmax2_postHistory_UserId_PostId_posts__nunique_Tags",
+    "dmax2_posts_OwnerUserId_ParentId_posts__nunique_Tags",
+    "dmax2_postHistory_UserId_PostId_posts__nunique_OwnerDisplayName",
+    "dmax2_comments_UserId_PostId_posts__nunique_OwnerDisplayName",
+    "dmax2_posts_OwnerUserId_AcceptedAnswerId_posts__count_distinct_AcceptedAnswerId",
+    "dmax2_posts_OwnerUserId_AcceptedAnswerId_posts__nunique_Body"
+  ]
+}

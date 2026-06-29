@@ -1,0 +1,2 @@
+dataset,task,variant,seed,n_train_used,n_val_used,n_features,accuracy,roc_auc,average_precision,log_loss,train_parquet,val_parquet
+rel-amazon,item-churn,fdhg_plus_dmax2,41,10000,2000,24,0.685,0.76549745965163,0.6436815431670163,0.5901153334935296,outputs/stage_c_dmax2_sampled/rel-amazon_item-churn/fdhg_plus_dmax2/target_with_dfs_agg_train.parquet,outputs/stage_c_dmax2_sampled/rel-amazon_item-churn/fdhg_plus_dmax2/target_with_dfs_agg_val.parquet

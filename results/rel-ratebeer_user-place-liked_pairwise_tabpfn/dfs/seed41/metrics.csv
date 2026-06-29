@@ -1,0 +1,2 @@
+dataset,task,variant,seed,n_train_used,n_val_used,n_features,accuracy,roc_auc,average_precision,log_loss,train_parquet,val_parquet
+rel-ratebeer,user-place-liked_pairwise,dfs,41,10000,2000,10,0.496,0.554998554998555,0.5301324558976613,1.100991747081433,/home/evelyn/fdhg-icl-paper/outputs/e2e/rel-ratebeer_user-place-liked_pairwise/dfs/target_with_dfs_agg_train.parquet,/home/evelyn/fdhg-icl-paper/outputs/e2e/rel-ratebeer_user-place-liked_pairwise/dfs/target_with_dfs_agg_val.parquet

@@ -1,0 +1,94 @@
+version: 2
+experiments:
+  relbench_configured_dmax1:
+    status: partially_reproducible
+    entrypoint: fdhg-reproduce
+    config: configs/reproduction/tasks.yaml
+    outputs:
+      - results/final_tables/reproduced_validation_gate_seed_metrics.csv
+    external_requirements:
+      - RelBench datasets/cache
+      - decoder dependencies
+
+  paper_main_tables:
+    status: reproducible_from_compact_inputs
+    generator: scripts/analysis/build_paper_tables.py
+    required_inputs:
+      - results/final_tables/final_all_runs.csv
+      - results/final_tables/final_failure_log.csv
+    curated_outputs:
+      - results/paper_tables/paper_main_summary.csv
+      - results/paper_tables/paper_ablation_summary.csv
+      - results/paper_tables/paper_diagnostic_summary.csv
+
+  validation_gate_tables:
+    status: reproducible_from_compact_inputs
+    generator: scripts/analysis/build_validation_gate_table.py
+    required_inputs:
+      - results/sweeps/relbench_v2_ratebeer_gate_summary/ratebeer_fdhg_v2_gate_compact_summary_all_current.csv
+      - results/sweeps/relbench_v2_salt_gate_summary/salt_8task_fdhg_v2_final_compact_summary.csv
+      - results/final_tables/rel_arxiv_extension_task_summary.csv
+    curated_outputs:
+      - results/paper_tables/relbench_v2_fdhg_gate_paper_table.csv
+      - results/paper_tables/relbench_v2_fdhg_gate_outcome_summary.csv
+
+  synthetic_program_recovery:
+    status: recovered_research_implementation
+    generator: experiments/research_archive/scripts/evaluate_synthetic_program_recovery.py
+    aggregator: scripts/analysis/build_synthetic_tables.py
+    required_inputs:
+      - results/synthetic_prior/program_recovery_k*.csv
+    curated_outputs:
+      - results/paper_tables/synthetic_program_recovery_summary.csv
+
+  synthetic_oracle_gap:
+    status: recovered_research_implementation
+    generator: experiments/research_archive/scripts/train_feature_ranker_and_oracle_gap.py
+    evaluator: experiments/research_archive/scripts/evaluate_synthetic_tabpfn_oracle_gap_with_random.py
+    aggregator: scripts/analysis/build_synthetic_tables.py
+    required_inputs:
+      - outputs/synthetic_tabpfn_oracle_gap/seed53_60_top4_with_random/synthetic_tabpfn_oracle_gap_results.csv
+    curated_outputs:
+      - results/paper_tables/synthetic_oracle_gap_summary.csv
+
+  dmax2_topk:
+    status: recovered_research_implementation
+    generator: experiments/research_archive/scripts/build_relbench_dmax2_features_v2.py
+    selector: experiments/research_archive/scripts/rank_dmax2_programs_supervised.py
+    evidence:
+      - results/research_archive/extension_b_dmax2/extension_b_summary.csv
+
+  random_same_budget:
+    status: recovered_research_implementation
+    generator: experiments/research_archive/scripts/add_random_same_budget_features.py
+    evidence:
+      - results/research_archive/phase1_item_churn_random_residual_same_budget_eval/**/*.csv
+
+  feature_budget_curve:
+    status: recovered_research_implementation
+    generator: experiments/research_archive/scripts/run_fdhg_budget_curve_tabpfn.py
+    aggregator: experiments/research_archive/scripts/build_relstack_budget_curve_summary.py
+    evidence:
+      - results/research_archive/budget_curve/*.csv
+    curated_outputs:
+      - results/paper_tables/final_feature_budget_curve_relstack_user_badge_paper.csv
+
+  temporal_features:
+    status: recovered_research_implementation
+    generator: experiments/research_archive/scripts/build_temporal_features.py
+    evidence:
+      - results/research_archive/phase2_temporal/**/*.csv
+
+  cold_warm_analysis:
+    status: recovered_research_implementation
+    generator: experiments/research_archive/scripts/integrate_rel_arxiv_results.py
+    curated_outputs:
+      - results/paper_tables/rel_arxiv_author_category_cold_warm_gains.csv
+
+  uniqueness_penalty_stress:
+    status: recovered_research_implementation
+    generator: experiments/research_archive/scripts/run_uniqueness_penalty_stress.py
+    evidence:
+      - results/research_archive/uniqueness_stress/*.csv
+    curated_outputs:
+      - results/paper_tables/priority3_uniqueness_penalty_stress_test_summary.csv

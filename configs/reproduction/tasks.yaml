@@ -65,7 +65,7 @@ tasks:
     label_col: total_score
     dfs:
       child_table: beer_ratings
-      numeric_col: total_score
+      numeric_col: aroma_history_value
       max_train: 10000
       max_val: 2000
     evaluation:
@@ -73,7 +73,6 @@ tasks:
       - created_at
       - rating_id
       - beer_id
-      - f_beer_ratings_days_since_last
     target:
       primary_key_col: rating_id
       entity_key: beer_id

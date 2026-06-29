@@ -1,0 +1,11 @@
+dataset,task,variant,seed,model,status,failure_reason,feature_path,result_path
+rel-amazon,item-ltv,target_only,41,tabpfn,failed,,,results/week1/target_only_rel-amazon_item-ltv_tabpfn_seed41.json
+rel-amazon,user-ltv,target_only,41,tabpfn,failed,,,results/week1/target_only_rel-amazon_user-ltv_tabpfn_seed41.json
+rel-avito,ad-ctr,target_only,41,tabpfn,failed,,,results/week1/target_only_rel-avito_ad-ctr_tabpfn_seed41.json
+rel-event,user-attendance,target_only,41,tabpfn,failed,,,results/week1/target_only_rel-event_user-attendance_tabpfn_seed41.json
+rel-f1,driver-position,target_only,41,tabpfn,failed,,,results/week1/target_only_rel-f1_driver-position_tabpfn_seed41.json
+rel-hm,item-sales,target_only,41,tabpfn,failed,,,results/week1/target_only_rel-hm_item-sales_tabpfn_seed41.json
+rel-stack,post-votes,target_only,41,tabpfn,failed,,,results/week1/target_only_rel-stack_post-votes_tabpfn_seed41.json
+rel-trial,site-success,target_only,41,tabpfn,failed,,,results/week1/target_only_rel-trial_site-success_tabpfn_seed41.json
+rel-trial,study-adverse,target_only,41,tabpfn,failed,,,results/week1/target_only_rel-trial_study-adverse_tabpfn_seed41.json
+rel-hm,user-churn,fdhg_dmax1,41,tabpfn,failed,TabPFN runtime failure / SIGSEGV after feature generation succeeded,feature_generation_succeeded; exact artifact path not recorded in final aggregate,manual_failure_log

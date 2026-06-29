@@ -1,0 +1,9 @@
+variant,seed,n_train_used,n_val_used,n_features,accuracy,roc_auc,average_precision,log_loss,path
+last_only,41,10000,566,8,0.7826855123674912,0.806485260770975,0.9349886065329598,0.43183625231135986,results/phase2_temporal/rel-f1_driver-dnf/ablations/last_only/last_only_tabpfn_seed41.json
+temporal_full,41,10000,566,64,0.7950530035335689,0.8049433106575964,0.9345082918659648,0.43051602659328436,results/phase2_temporal/rel-f1_driver-dnf/ablations/temporal_full/temporal_full_tabpfn_seed41.json
+no_statusId,41,10000,566,56,0.7879858657243817,0.8015328798185941,0.9312338059547968,0.43193998297660585,results/phase2_temporal/rel-f1_driver-dnf/ablations/no_statusId/no_statusId_tabpfn_seed41.json
+standings_only,41,10000,566,24,0.7826855123674912,0.7925170068027212,0.9250067523088886,0.44056875428617603,results/phase2_temporal/rel-f1_driver-dnf/ablations/standings_only/standings_only_tabpfn_seed41.json
+trend_only,41,10000,566,8,0.7826855123674912,0.7873287981859411,0.9236700773513457,0.44712722457785165,results/phase2_temporal/rel-f1_driver-dnf/ablations/trend_only/trend_only_tabpfn_seed41.json
+results_only,41,10000,566,40,0.7897526501766784,0.7682448979591836,0.9189135608264476,0.45114743299419496,results/phase2_temporal/rel-f1_driver-dnf/ablations/results_only/results_only_tabpfn_seed41.json
+history_only,41,10000,566,24,0.7756183745583038,0.6442721088435375,0.8677686165472844,0.516512933176094,results/phase2_temporal/rel-f1_driver-dnf/ablations/history_only/history_only_tabpfn_seed41.json
+recency_only,41,10000,566,24,0.7791519434628975,0.538421768707483,0.8095688764307846,0.5880986057024195,results/phase2_temporal/rel-f1_driver-dnf/ablations/recency_only/recency_only_tabpfn_seed41.json

@@ -1,0 +1,8 @@
+dataset,task,method,status,source,allowed_features,forbidden_features,decoder,priority,note
+rel-stack,user-badge,target_only,done,existing_phase0,target table only,relational/FD/AFD/JUICE features,TabPFN,1,
+rel-stack,user-badge,naive,done,existing_phase0,naive flattened relational features,FD/AFD/ranker,TabPFN,1,
+rel-stack,user-badge,dfs_style_aggregation,done,existing_phase0,current DFS-style aggregation,FD/AFD/ambiguity/ranker,TabPFN,1,
+rel-stack,user-badge,juice_rdblearn_style,pending implementation,new_baseline,PK/FK metapath column-wise aggregation,FD/AFD/ambiguity/uniqueness/ranker,TabPFN,1,exact matched JUICE-style still pending
+rel-stack,user-badge,fdhg_fkagg,done_exact_match_to_dfs,existing_phase2_audit,FDHG restricted to FK/inverse-FK aggregation,FD/AFD/ambiguity/non-FK dependency paths/ranker,TabPFN,1,verified exact-match to DFS after removing PostId->ContentLicense ambiguity residual block
+rel-stack,user-badge,fdhg_dmax1,done,existing_phase0,FDHG dmax1 dependency/ambiguity programs,test leakage,TabPFN,1,
+rel-stack,user-badge,rdblearn_direct,done,external_rdblearn,RDBLearn direct DFS+TabPFN baseline,FD/AFD/ambiguity/uniqueness/ranker,TabPFN-family,1,direct external baseline; not same feature-budget ablation

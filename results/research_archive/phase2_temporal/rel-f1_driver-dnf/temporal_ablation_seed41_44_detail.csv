@@ -1,0 +1,13 @@
+variant,seed,n_train_used,n_val_used,n_features,accuracy,roc_auc,average_precision,log_loss,path
+last_only,41,10000,566,8,0.7826855123674912,0.806485260770975,0.9349886065329598,0.43183625231135986,results/phase2_temporal/rel-f1_driver-dnf/ablations/last_only/last_only_tabpfn_seed41.json
+last_only,42,10000,566,8,0.7826855123674912,0.8043628117913832,0.9329146356888953,0.42988877920723056,results/phase2_temporal/rel-f1_driver-dnf/ablations/last_only/last_only_tabpfn_seed42.json
+last_only,43,10000,566,8,0.7809187279151943,0.8057777777777777,0.9341248187307409,0.42933212066974313,results/phase2_temporal/rel-f1_driver-dnf/ablations/last_only/last_only_tabpfn_seed43.json
+last_only,44,10000,566,8,0.7826855123674912,0.8063038548752833,0.934345920251971,0.4315306640739193,results/phase2_temporal/rel-f1_driver-dnf/ablations/last_only/last_only_tabpfn_seed44.json
+no_statusId,41,10000,566,56,0.7879858657243817,0.8015328798185941,0.9312338059547968,0.43193998297660585,results/phase2_temporal/rel-f1_driver-dnf/ablations/no_statusId/no_statusId_tabpfn_seed41.json
+no_statusId,42,10000,566,56,0.7985865724381626,0.7982312925170068,0.9308443726285904,0.43441185419633505,results/phase2_temporal/rel-f1_driver-dnf/ablations/no_statusId/no_statusId_tabpfn_seed42.json
+no_statusId,43,10000,566,56,0.7879858657243817,0.8012244897959184,0.9322433300857034,0.42976200237603257,results/phase2_temporal/rel-f1_driver-dnf/ablations/no_statusId/no_statusId_tabpfn_seed43.json
+no_statusId,44,10000,566,56,0.7968197879858657,0.8005532879818593,0.9311020349852989,0.4357922665172119,results/phase2_temporal/rel-f1_driver-dnf/ablations/no_statusId/no_statusId_tabpfn_seed44.json
+temporal_full,41,10000,566,64,0.7950530035335689,0.8049433106575964,0.9345082918659648,0.43051602659328436,results/phase2_temporal/rel-f1_driver-dnf/ablations/temporal_full/temporal_full_tabpfn_seed41.json
+temporal_full,42,10000,566,64,0.7985865724381626,0.801514739229025,0.9327851906878193,0.43049135301677843,results/phase2_temporal/rel-f1_driver-dnf/ablations/temporal_full/temporal_full_tabpfn_seed42.json
+temporal_full,43,10000,566,64,0.7985865724381626,0.8024399092970522,0.933124868122533,0.429273771327717,results/phase2_temporal/rel-f1_driver-dnf/ablations/temporal_full/temporal_full_tabpfn_seed43.json
+temporal_full,44,10000,566,64,0.7985865724381626,0.7997732426303854,0.9309241913647457,0.43426227142115437,results/phase2_temporal/rel-f1_driver-dnf/ablations/temporal_full/temporal_full_tabpfn_seed44.json

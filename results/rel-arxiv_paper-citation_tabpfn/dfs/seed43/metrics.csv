@@ -1,0 +1,2 @@
+dataset,task,variant,seed,n_train_used,n_val_used,n_features,accuracy,roc_auc,average_precision,log_loss,train_parquet,val_parquet
+rel-arxiv,paper-citation,dfs,43,10000,2000,14,0.7235,0.8117059015167054,0.8069909596797911,0.5307238563943482,/home/evelyn/fdhg-icl-paper/outputs/e2e/rel-arxiv_paper-citation/dfs/target_with_dfs_agg_train.parquet,/home/evelyn/fdhg-icl-paper/outputs/e2e/rel-arxiv_paper-citation/dfs/target_with_dfs_agg_val.parquet

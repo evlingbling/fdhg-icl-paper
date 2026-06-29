@@ -1,0 +1,7 @@
+dataset,task,target_key,target_time_col,base_child_table,base_child_key,base_child_time_col,pivot_key,second_table,second_key,second_time_col,numeric_col,label_col,notes
+rel-amazon,item-churn,product_id,timestamp,review,product_id,review_time,customer_id,review,customer_id,review_time,rating,churn,item -> review -> customer review history
+rel-amazon,item-ltv,product_id,timestamp,review,product_id,review_time,customer_id,review,customer_id,review_time,rating,ltv,item -> review -> customer review history
+rel-stack,user-post-comment,UserId,timestamp,comments,UserId,CreationDate,PostId,comments,PostId,CreationDate,UserId,,user -> comments -> post commenters
+rel-stack,post-post-related,PostId,timestamp,postLinks,PostId,CreationDate,RelatedPostId,posts,Id,CreationDate,PostTypeId,,post -> related post -> post attrs
+rel-trial,condition-sponsor-run,condition_id,timestamp,conditions_studies,condition_id,date,nct_id,sponsors_studies,nct_id,date,sponsor_id,,condition -> study -> sponsor
+rel-trial,site-sponsor-run,facility_id,timestamp,facilities_studies,facility_id,date,nct_id,sponsors_studies,nct_id,date,sponsor_id,,site -> study -> sponsor

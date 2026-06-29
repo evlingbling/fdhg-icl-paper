@@ -1,0 +1,10 @@
+dataset,task,taxonomy,target_key,target_time_col,child_table,numeric_col,run_target_only,run_naive,run_dfs,run_juice,run_fkagg,run_fdhg_dmax1,run_fdhg_dmax2,run_last,expected_role,notes
+rel-stack,user-badge,fd_rich_entity,,,,,1,1,1,1,1,1,1,0,strong_positive,main FD-rich positive case
+rel-amazon,item-churn,fd_aggregation_mixed,,,,,1,1,1,1,1,1,0,0,modest_positive,small FDHG gain over DFS
+rel-amazon,user-churn,sparse_no_dependency,,,,,1,1,1,1,1,1,0,0,fallback,known FDHG equals DFS fallback case
+rel-f1,driver-dnf,temporal_local_state,,,,,1,1,1,1,1,1,0,1,temporal_diagnostic,last-state operators dominate
+rel-avito,user-visits,aggregation_heavy,UserID,timestamp,VisitStream,AdID,1,1,1,1,1,1,0,0,aggregation_heavy,DFS or FK aggregation likely strong
+rel-avito,user-clicks,aggregation_heavy,UserID,timestamp,VisitStream,AdID,1,1,1,1,1,1,0,0,aggregation_heavy,DFS or FK aggregation likely strong
+rel-event,user-repeat,temporal_event_history,user,timestamp,event_interest,interested,1,1,1,1,1,1,0,1,temporal_event_history,event recency/history candidate
+rel-event,user-ignore,temporal_event_history,user,timestamp,event_interest,not_interested,1,1,1,1,1,1,0,1,temporal_event_history,event recency/history candidate
+rel-trial,study-outcome,sparse_no_dependency,,,,,1,1,1,1,1,1,0,0,sparse_or_fallback,weak dependency evidence candidate
