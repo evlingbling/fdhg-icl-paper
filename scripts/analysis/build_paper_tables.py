@@ -52,6 +52,8 @@ def normalize_variant_from_path(row: pd.Series) -> str:
     ):
         if "_fdhg_full_seed" in path and "_dfs/" in path:
             return "dfs"
+        if "_fdhg_full_seed" in path and "_naive/" in path:
+            return "naive"
         if "_fdhg_full_seed" in path and "_fdhg/" in path:
             return "fdhg_dmax1"
 
@@ -145,7 +147,17 @@ def build_paper_main_runs(df: pd.DataFrame) -> pd.DataFrame:
     item = d[(d.dataset == "rel-amazon") & (d.task == "item-churn")].copy()
 
     parts.append(item[(item.variant == "target_only") & item.result_path_str.str.contains("results/week1/")])
-    parts.append(item[(item.variant == "naive") & item.result_path_str.str.contains("rel-amazon_item-churn_naive|phase2_relbench/phase2_main_runs.csv")])
+    # Use the paired four-seed naive arm from the same phase2 protocol
+    # as DFS and FDHG. Exclude the older standalone seed-41 naive run.
+    parts.append(
+        item[
+            (item.variant == "naive")
+            & item.result_path_str.str.contains(
+                "_fdhg_full_seed.*_naive",
+                regex=True,
+            )
+        ]
+    )
     # For DFS, canonical n_features=24 phase2 DFS, not fdhg_heuristic n_features=32.
     parts.append(item[(item.variant == "dfs") & (item.n_features == 24)])
     # For FDHG, canonical n_features=32 true FDHG path.
@@ -203,6 +215,115 @@ def build_stack_dmax2_runs(df: pd.DataFrame) -> pd.DataFrame:
 
     return out
 
+
+def summarize_stack_dmax2_evidence(runs: pd.DataFrame) -> pd.DataFrame:
+    """Build the portable dmax2 evidence table from final_all_runs.csv."""
+    keep = [
+        "dmax2_only_topk16",
+        "dmax2_only_random16",
+        "fdhg_dmax1_plus_dmax2_topk16",
+        "fdhg_dmax1_plus_dmax2_random16",
+    ]
+
+    runs = runs[runs["variant"].isin(keep)].copy()
+
+    if runs.empty:
+        raise AssertionError(
+            "No canonical RelStack User-Badge dmax2 rows were found."
+        )
+
+    rows = []
+
+    for variant, group in runs.groupby("variant", sort=False):
+        group = group.sort_values("seed")
+
+        # Guard against duplicated aggregate/JSON records.
+        group = group.drop_duplicates(
+            subset=[
+                "variant",
+                "seed",
+                "n_features",
+                "accuracy",
+                "roc_auc",
+                "average_precision",
+                "log_loss",
+            ]
+        )
+
+        seeds = sorted(
+            group["seed"].dropna().astype(int).unique().tolist()
+        )
+        n_runs = len(seeds)
+
+        expected_seeds = (
+            [41]
+            if variant in {
+                "dmax2_only_topk16",
+                "dmax2_only_random16",
+            }
+            else [41, 42, 43, 44]
+        )
+
+        if seeds != expected_seeds:
+            raise AssertionError(
+                f"{variant} seeds={seeds}; "
+                f"expected {expected_seeds}."
+            )
+
+        row = {
+            "dataset": "rel-stack",
+            "task": "user-badge",
+            "variant": variant,
+            "n_runs": n_runs,
+            "seeds": ",".join(map(str, seeds)),
+            "n_features_mean": float(group["n_features"].mean()),
+            "evidence_level": (
+                "multiseed_confirmatory"
+                if n_runs == 4
+                else "single_seed_exploratory"
+            ),
+            "exact_rerun_possible": n_runs == 4,
+        }
+
+        for metric in METRICS:
+            values = pd.to_numeric(
+                group[metric],
+                errors="coerce",
+            ).dropna()
+
+            row[f"{metric}_mean"] = (
+                float(values.mean())
+                if len(values)
+                else np.nan
+            )
+            row[f"{metric}_std"] = (
+                float(values.std(ddof=1))
+                if len(values) > 1
+                else np.nan
+            )
+
+        rows.append(row)
+
+    out = pd.DataFrame(rows)
+
+    order = [
+        "dmax2_only_topk16",
+        "dmax2_only_random16",
+        "fdhg_dmax1_plus_dmax2_topk16",
+        "fdhg_dmax1_plus_dmax2_random16",
+    ]
+    order_map = {
+        variant: index
+        for index, variant in enumerate(order)
+    }
+
+    out["_order"] = out["variant"].map(order_map)
+
+    return (
+        out.sort_values("_order")
+        .drop(columns="_order")
+        .reset_index(drop=True)
+    )
 
 def build_ablation_runs(df: pd.DataFrame) -> pd.DataFrame:
     d = select_non_aggregate(df)
@@ -312,7 +433,7 @@ def main() -> None:
     main_summary = summarize(main_runs)
 
     dmax2_runs = build_stack_dmax2_runs(clean)
-    dmax2_summary = summarize(dmax2_runs)
+    dmax2_summary = summarize_stack_dmax2_evidence(dmax2_runs)
 
     ablation_runs = build_ablation_runs(clean)
     ablation_summary = summarize(ablation_runs)
