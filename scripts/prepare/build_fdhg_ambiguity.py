@@ -129,6 +129,7 @@ def compute_ambiguity_map(entity_df: pd.DataFrame, lhs: str, rhs: str) -> pd.Dat
 def build_split(
     target_df: pd.DataFrame,
     entity_df: pd.DataFrame,
+    fit_entity_df: pd.DataFrame,
     edge_df: pd.DataFrame,
     *,
     entity_key: str,
@@ -150,7 +151,11 @@ def build_split(
         rhs = str(edge["rhs"])
         edge_name = f"{lhs}_to_{rhs}"
 
-        amb_map = compute_ambiguity_map(entity_df, lhs, rhs)
+        amb_map = compute_ambiguity_map(
+            fit_entity_df,
+            lhs,
+            rhs,
+        )
         tmp = pd.DataFrame({
             "__fdhg_row_id": merged["__fdhg_row_id"],
             "lhs_norm": normalize_series(merged[lhs]),
@@ -178,6 +183,15 @@ def main() -> None:
     parser.add_argument("--out-dir", required=True)
     parser.add_argument("--entity-key", required=True)
     parser.add_argument("--target-table", default=None)
+    parser.add_argument(
+        "--fit-table",
+        default=None,
+        help=(
+            "Train-only entity table used to fit ambiguity mappings. "
+            "If omitted, the full entity table is used for backward "
+            "compatibility."
+        ),
+    )
     parser.add_argument("--min-r-del", type=float, default=0.6)
     parser.add_argument("--min-coverage", type=float, default=0.5)
     parser.add_argument("--min-lhs-support-repeated", type=float, default=0.05)
@@ -196,12 +210,24 @@ def main() -> None:
         raise FileNotFoundError(f"Could not find entity table: {entity_path}")
 
     entity_df = pd.read_parquet(entity_path)
+
+    fit_entity_path = (
+        Path(args.fit_table)
+        if args.fit_table
+        else entity_path
+    )
+    if not fit_entity_path.exists():
+        raise FileNotFoundError(
+            f"Could not find AFD fit table: {fit_entity_path}"
+        )
+
+    fit_entity_df = pd.read_parquet(fit_entity_path)
     afd_df = pd.read_csv(args.afd_stats)
 
     edge_df = select_edge(
         afd_df,
         id_columns={args.entity_key},
-        target_df=entity_df,
+        target_df=fit_entity_df,
         min_r_del=args.min_r_del,
         min_coverage=args.min_coverage,
         min_lhs_support_repeated=args.min_lhs_support_repeated,
@@ -210,6 +236,12 @@ def main() -> None:
 
     edge_path = out_dir / "afd_edges_dmax1.csv"
     edge_df.to_csv(edge_path, index=False)
+
+    print("=== FDHG ambiguity fitting scope ===")
+    print("entity lookup table:", entity_path)
+    print("ambiguity fit table:", fit_entity_path)
+    print("entity lookup shape:", entity_df.shape)
+    print("ambiguity fit shape:", fit_entity_df.shape)
 
     print("=== Selected AFD edges ===")
     if edge_df.empty:
@@ -221,7 +253,13 @@ def main() -> None:
         target_path = dfs_dir / f"target_with_dfs_agg_{split}.parquet"
         target_df = pd.read_parquet(target_path)
 
-        amb = build_split(target_df, entity_df, edge_df, entity_key=args.entity_key)
+        amb = build_split(
+            target_df,
+            entity_df,
+            fit_entity_df,
+            edge_df,
+            entity_key=args.entity_key,
+        )
         amb_path = out_dir / f"ambiguity_features_{split}.parquet"
         amb.drop(columns=["__fdhg_row_id"]).to_parquet(amb_path, index=False)
 
