@@ -11,6 +11,9 @@ PYTHONPATH=src \
 python scripts/analysis/run_all_validation_gates.py
 
 PYTHONPATH=src python scripts/analysis/build_validation_gate_table.py
+
+PYTHONPATH=src \
+python scripts/analysis/build_appendix_gate_reconciliation.py
 python scripts/analysis/build_synthetic_tables.py
 
 echo "Paper tables regenerated successfully."
