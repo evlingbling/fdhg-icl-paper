@@ -1,8 +1,8 @@
 dataset,task,variant,seed,source_kind,source_priority,source_path,accuracy,micro_f1,macro_f1,weighted_f1,roc_auc,average_precision,log_loss,mrr,rmse,mae,r2
 rel-amazon,item-churn,dfs,41,paper_main,3,results/final_tables/paper_main_runs.csv,0.6785,,,,0.7580196267448532,0.6366809150046987,0.5997747833017442,,,,
-rel-amazon,item-churn,dfs,42,final_all,4,results/final_tables/final_all_runs.csv,0.679,,,,0.7692990443172705,0.6290269424156062,0.5776361538959173,,,,
-rel-amazon,item-churn,dfs,43,final_all,4,results/final_tables/final_all_runs.csv,0.6455,,,,0.7295331068830887,0.6110713669827608,0.6471730548705474,,,,
-rel-amazon,item-churn,dfs,44,final_all,4,results/final_tables/final_all_runs.csv,0.682,,,,0.7722170646445311,0.6498633602622272,0.5895964835456423,,,,
+rel-amazon,item-churn,dfs,42,paper_main,3,results/final_tables/paper_main_runs.csv,0.679,,,,0.7692990443172705,0.6290269424156062,0.5776361538959173,,,,
+rel-amazon,item-churn,dfs,43,paper_main,3,results/final_tables/paper_main_runs.csv,0.6455,,,,0.7295331068830887,0.6110713669827608,0.6471730548705474,,,,
+rel-amazon,item-churn,dfs,44,paper_main,3,results/final_tables/paper_main_runs.csv,0.682,,,,0.7722170646445311,0.6498633602622272,0.5895964835456423,,,,
 rel-amazon,item-churn,fdhg,41,paper_main,3,results/final_tables/paper_main_runs.csv,0.6855,,,,0.7589127781216923,0.634493270855889,0.5985493308525666,,,,
 rel-amazon,item-churn,fdhg,42,paper_main,3,results/final_tables/paper_main_runs.csv,0.681,,,,0.7704463225040702,0.6309679919254978,0.5782079207684173,,,,
 rel-amazon,item-churn,fdhg,43,paper_main,3,results/final_tables/paper_main_runs.csv,0.6535,,,,0.7305129984682507,0.6135945881612581,0.6453972409555463,,,,
