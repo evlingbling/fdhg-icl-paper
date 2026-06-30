@@ -1,0 +1,51 @@
+{
+  "result_root": "/home/evelyn/fdhg-icl-paper/results/rel-salt_sales-shipcond_tabpfn",
+  "base_variant": "dfs",
+  "candidate_variant": "fdhg_dmax1",
+  "metric": "accuracy",
+  "direction": "maximize",
+  "secondary_metric": "mrr",
+  "secondary_direction": "maximize",
+  "gate_mode": "lexicographic",
+  "min_improvement": 0.0,
+  "seeds": [
+    41,
+    42,
+    43,
+    44
+  ],
+  "base_scores": [
+    0.2722722722722723,
+    0.2722722722722723,
+    0.2722722722722723,
+    0.2722722722722723
+  ],
+  "candidate_scores": [
+    0.2737737737737737,
+    0.2712712712712712,
+    0.2737737737737737,
+    0.2737737737737737
+  ],
+  "secondary_base_scores": [
+    0.4741652314004844,
+    0.474164039732626,
+    0.4741635015600449,
+    0.4741646150205576
+  ],
+  "secondary_candidate_scores": [
+    0.4773172668735603,
+    0.4754800942030542,
+    0.4775620424168251,
+    0.4775512144454708
+  ],
+  "per_seed_improvements": [
+    0.0015015015015014122,
+    -0.0010010010010010895,
+    0.0015015015015014122,
+    0.0015015015015014122
+  ],
+  "require_all_seeds": true,
+  "gate_outcome": "FALLBACK",
+  "selected_variant": "dfs",
+  "fallback_exact_match": true
+}

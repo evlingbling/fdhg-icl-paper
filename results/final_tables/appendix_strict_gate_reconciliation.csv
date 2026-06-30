@@ -1,0 +1,19 @@
+dataset,task,legacy_gate,strict_dfs_fdhg_gate,mismatch_class,recommended_appendix_gate,primary_metric,secondary_metric,gate_reason,recommended_action
+rel-amazon,item-churn,SELECT,SELECT,agreement,SELECT,roc_auc,,all_seeds_strictly_pass,No change.
+rel-amazon,user-churn,FALLBACK,FALLBACK,agreement,FALLBACK,roc_auc,,primary_metric_seed_inconsistency_fallback,No change.
+rel-arxiv,paper-citation,FALLBACK,FALLBACK,agreement,FALLBACK,log_loss,,primary_metric_seed_inconsistency_fallback,No change.
+rel-f1,driver-dnf,FALLBACK,SELECT,comparison_scope_mismatch,FALLBACK,roc_auc,,all_seeds_strictly_pass,Keep fallback because the archived decision uses a stronger temporal baseline than DFS alone.
+rel-ratebeer,beer-churn,SELECT,SELECT,agreement,SELECT,log_loss,,all_seeds_strictly_pass,No change.
+rel-ratebeer,beer_ratings-total_score,FALLBACK,FALLBACK,agreement,FALLBACK,rmse,,primary_metric_seed_inconsistency_fallback,No change.
+rel-ratebeer,brewer-dormant,FALLBACK,FALLBACK,agreement,FALLBACK,log_loss,,primary_metric_seed_inconsistency_fallback,No change.
+rel-ratebeer,user-churn,FALLBACK,FALLBACK,agreement,FALLBACK,log_loss,,primary_metric_seed_inconsistency_fallback,No change.
+rel-ratebeer,user-count,SELECT,SELECT,agreement,SELECT,rmse,,all_seeds_strictly_pass,No change.
+rel-salt,item-incoterms,FALLBACK,FALLBACK,agreement,FALLBACK,accuracy,,primary_metric_seed_inconsistency_fallback,No change.
+rel-salt,item-plant,FALLBACK,FALLBACK,agreement,FALLBACK,accuracy,,primary_metric_seed_inconsistency_fallback,No change.
+rel-salt,item-shippoint,SELECT,SELECT,agreement,SELECT,accuracy,,all_seeds_strictly_pass,No change.
+rel-salt,sales-group,SELECT,SELECT,agreement,SELECT,accuracy,,all_seeds_strictly_pass,No change.
+rel-salt,sales-incoterms,SELECT,SELECT,agreement,SELECT,accuracy,,all_seeds_strictly_pass,No change.
+rel-salt,sales-office,SELECT,FALLBACK,stale_legacy_gate,FALLBACK,accuracy,,primary_metric_seed_inconsistency_fallback,Update to FALLBACK because tied seeds do not satisfy strict improvement.
+rel-salt,sales-payterms,SELECT,FALLBACK,stale_legacy_gate,FALLBACK,accuracy,,primary_metric_seed_inconsistency_fallback,Update to FALLBACK because tied seeds do not satisfy strict improvement.
+rel-salt,sales-shipcond,SELECT,FALLBACK,stale_legacy_gate,FALLBACK,accuracy,mrr,lexicographic_seed_inconsistency_fallback,Update to FALLBACK because seed 42 regresses on primary accuracy.
+rel-stack,user-badge,FALLBACK,SELECT,stale_legacy_gate,SELECT,roc_auc,,all_seeds_strictly_pass,Update to SELECT under strict all-seed DFS-to-FDHG AUROC gating.

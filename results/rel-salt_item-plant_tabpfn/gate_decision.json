@@ -1,0 +1,41 @@
+{
+  "result_root": "/home/evelyn/fdhg-icl-paper/results/rel-salt_item-plant_tabpfn",
+  "base_variant": "dfs",
+  "candidate_variant": "fdhg_dmax1",
+  "metric": "accuracy",
+  "direction": "maximize",
+  "secondary_metric": null,
+  "secondary_direction": null,
+  "gate_mode": "single_metric",
+  "min_improvement": 0.0,
+  "seeds": [
+    41,
+    42,
+    43,
+    44
+  ],
+  "base_scores": [
+    0.9639097744360904,
+    0.9689223057644112,
+    0.9674185463659148,
+    0.9689223057644112
+  ],
+  "candidate_scores": [
+    0.9659147869674184,
+    0.9654135338345864,
+    0.9644110275689224,
+    0.9704260651629072
+  ],
+  "secondary_base_scores": null,
+  "secondary_candidate_scores": null,
+  "per_seed_improvements": [
+    0.00200501253132801,
+    -0.0035087719298247944,
+    -0.003007518796992459,
+    0.0015037593984960074
+  ],
+  "require_all_seeds": true,
+  "gate_outcome": "FALLBACK",
+  "selected_variant": "dfs",
+  "fallback_exact_match": true
+}

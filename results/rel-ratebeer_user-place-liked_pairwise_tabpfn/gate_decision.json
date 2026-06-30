@@ -1,0 +1,41 @@
+{
+  "result_root": "/home/evelyn/fdhg-icl-paper/results/rel-ratebeer_user-place-liked_pairwise_tabpfn",
+  "base_variant": "dfs",
+  "candidate_variant": "fdhg_dmax1",
+  "metric": "log_loss",
+  "direction": "minimize",
+  "secondary_metric": null,
+  "secondary_direction": null,
+  "gate_mode": "single_metric",
+  "min_improvement": 0.0,
+  "seeds": [
+    41,
+    42,
+    43,
+    44
+  ],
+  "base_scores": [
+    1.100991747081433,
+    1.0635575066961576,
+    1.0993803725262998,
+    1.0921931060089105
+  ],
+  "candidate_scores": [
+    1.1348499373128302,
+    1.1168684725098157,
+    1.079837690890041,
+    1.1205022330536756
+  ],
+  "secondary_base_scores": null,
+  "secondary_candidate_scores": null,
+  "per_seed_improvements": [
+    -0.033858190231397245,
+    -0.05331096581365813,
+    0.01954268163625894,
+    -0.02830912704476507
+  ],
+  "require_all_seeds": true,
+  "gate_outcome": "FALLBACK",
+  "selected_variant": "dfs",
+  "fallback_exact_match": true
+}

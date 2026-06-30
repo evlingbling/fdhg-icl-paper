@@ -43,6 +43,18 @@ def normalize_variant_from_path(row: pd.Series) -> str:
     ):
         return "fdhg_dmax1"
 
+    # rel-amazon item-churn paired protocol rows were historically
+    # stored with the broad fdhg_dmax1 variant label. Recover the actual
+    # DFS/FDHG arm from the containing directory name.
+    if (
+        row.get("dataset") == "rel-amazon"
+        and row.get("task") == "item-churn"
+    ):
+        if "_fdhg_full_seed" in path and "_dfs/" in path:
+            return "dfs"
+        if "_fdhg_full_seed" in path and "_fdhg/" in path:
+            return "fdhg_dmax1"
+
     # rel-amazon user-churn FDHG fallback rows are stored under *_fdhg path
     # but have the same metrics/features as DFS.
     if (
@@ -309,6 +321,31 @@ def main() -> None:
     diagnostic_summary = summarize(diagnostic_runs)
 
     paper_failure = add_manual_failures(fail)
+
+    # Canonical item-churn DFS and FDHG summaries must use the same
+    # four validation seeds.
+    item_main = main_runs[
+        main_runs["dataset"].eq("rel-amazon")
+        & main_runs["task"].eq("item-churn")
+        & main_runs["variant"].isin(["dfs", "fdhg_dmax1"])
+    ]
+
+    for variant in ("dfs", "fdhg_dmax1"):
+        variant_seeds = set(
+            item_main.loc[
+                item_main["variant"].eq(variant),
+                "seed",
+            ]
+            .dropna()
+            .astype(int)
+        )
+
+        if variant_seeds != {41, 42, 43, 44}:
+            raise AssertionError(
+                "rel-amazon/item-churn "
+                f"{variant} seeds={sorted(variant_seeds)}; "
+                "expected [41, 42, 43, 44]."
+            )
 
     main_runs.to_csv(OUT_MAIN_RUNS, index=False)
     main_summary.to_csv(OUT_MAIN_SUMMARY, index=False)

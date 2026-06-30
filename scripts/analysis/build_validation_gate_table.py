@@ -23,16 +23,15 @@ arxiv_path = Path(
     "rel_arxiv_extension_task_summary.csv"
 )
 
-RUNTIME_GATE_DECISIONS = [
-    Path(
-        "results/rel-ratebeer_beer-churn_tabpfn/"
-        "gate_decision.json"
-    ),
-    Path(
-        "results/rel-ratebeer_brewer-dormant_tabpfn/"
-        "gate_decision.json"
-    ),
-]
+def discover_runtime_gate_decisions() -> list[Path]:
+    """Discover deterministic runtime gate decisions under result roots."""
+    return sorted(
+        path
+        for path in Path("results").glob(
+            "rel-*_*_*/gate_decision.json"
+        )
+        if path.is_file()
+    )
 
 
 def norm_gate(x):
@@ -50,11 +49,12 @@ def apply_runtime_gate_overrides(
     """Override legacy gate rows with reproducible runtime decisions."""
     frame = frame.copy()
 
-    decision_paths = [
-        path
-        for path in RUNTIME_GATE_DECISIONS
-        if path.exists()
-    ]
+    decision_paths = discover_runtime_gate_decisions()
+
+    print(
+        "[runtime-gate] Discovered decisions:",
+        len(decision_paths),
+    )
 
     for decision_path in decision_paths:
         metrics_path = decision_path.with_name(
@@ -173,12 +173,35 @@ def apply_runtime_gate_overrides(
         )
 
         frame.loc[mask, "gate_outcome"] = gate_outcome
-        frame.loc[mask, "gate_reason"] = (
-            "runtime_all_seed_improvement"
-            if selected
-            else "runtime_seed_inconsistency_fallback"
+        gate_mode = str(
+            decision.get("gate_mode", "single_metric")
         )
+
+        if gate_mode == "lexicographic":
+            gate_reason = (
+                "runtime_all_seed_lexicographic_improvement"
+                if selected
+                else "runtime_lexicographic_seed_inconsistency_fallback"
+            )
+        else:
+            gate_reason = (
+                "runtime_all_seed_improvement"
+                if selected
+                else "runtime_seed_inconsistency_fallback"
+            )
+
+        frame.loc[mask, "gate_reason"] = gate_reason
         frame.loc[mask, "primary_metric"] = decision["metric"]
+        frame.loc[mask, "secondary_metric"] = decision.get(
+            "secondary_metric"
+        )
+        frame.loc[mask, "secondary_direction"] = decision.get(
+            "secondary_direction"
+        )
+        frame.loc[mask, "gate_mode"] = decision.get(
+            "gate_mode",
+            "single_metric",
+        )
         frame.loc[mask, "base_variant"] = decision[
             "base_variant"
         ]
@@ -540,7 +563,10 @@ preferred_order = [
     "decoder",
     "gate_outcome",
     "gate_reason",
+    "gate_mode",
     "primary_metric",
+    "secondary_metric",
+    "secondary_direction",
     "base_variant",
     "candidate_variant",
     "selected_variant",
@@ -610,7 +636,11 @@ paper_cols = [
     "task",
     "task_family",
     "gate_outcome",
+    "gate_reason",
+    "gate_mode",
     "primary_metric",
+    "secondary_metric",
+    "secondary_direction",
     "base_score",
     "candidate_score",
     "gated_score",

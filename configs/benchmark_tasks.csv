@@ -37,11 +37,11 @@ rel-salt,item-plant,multiclass_classification,COMPLETE_FALLBACK,,FALLBACK,
 rel-salt,item-shippoint,multiclass_classification,COMPLETE_EVALUATED_SELECT,,SELECT,8.0
 rel-salt,sales-group,multiclass_classification,COMPLETE_EVALUATED_SELECT,,SELECT,
 rel-salt,sales-incoterms,multiclass_classification,COMPLETE_EVALUATED_SELECT,,SELECT,
-rel-salt,sales-office,multiclass_classification,COMPLETE_EVALUATED_SELECT,,SELECT,
-rel-salt,sales-payterms,multiclass_classification,COMPLETE_EVALUATED_SELECT,,SELECT,
-rel-salt,sales-shipcond,multiclass_classification,COMPLETE_EVALUATED_SELECT,,SELECT,
+rel-salt,sales-office,multiclass_classification,COMPLETE_FALLBACK,,FALLBACK,
+rel-salt,sales-payterms,multiclass_classification,COMPLETE_FALLBACK,,FALLBACK,
+rel-salt,sales-shipcond,multiclass_classification,COMPLETE_FALLBACK,,FALLBACK,
 rel-stack,post-votes,regression,COMPLETE_FALLBACK,41,FALLBACK,0.0
-rel-stack,user-badge,binary_classification,COMPLETE_FALLBACK,41;42;43;44,FALLBACK,
+rel-stack,user-badge,binary_classification,COMPLETE_EVALUATED_SELECT,41;42;43;44,SELECT,
 rel-stack,user-engagement,binary_classification,COMPLETE_FALLBACK,41,FALLBACK,0.0
 rel-trial,eligibilities-adult,binary_classification,COMPLETE_EVALUATED_SELECT,41;42;43;44,SELECT,9.0
 rel-trial,eligibilities-child,binary_classification,COMPLETE_EVALUATED_SELECT,41;42;43;44,SELECT,9.0
