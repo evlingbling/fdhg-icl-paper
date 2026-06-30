@@ -1,4 +1,6 @@
+import json
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 
@@ -21,6 +23,17 @@ arxiv_path = Path(
     "rel_arxiv_extension_task_summary.csv"
 )
 
+RUNTIME_GATE_DECISIONS = [
+    Path(
+        "results/rel-ratebeer_beer-churn_tabpfn/"
+        "gate_decision.json"
+    ),
+    Path(
+        "results/rel-ratebeer_brewer-dormant_tabpfn/"
+        "gate_decision.json"
+    ),
+]
+
 
 def norm_gate(x):
     s = str(x).upper()
@@ -29,6 +42,230 @@ def norm_gate(x):
     if "FALLBACK" in s or "REJECT" in s:
         return "FALLBACK"
     return s
+
+
+def apply_runtime_gate_overrides(
+    frame: pd.DataFrame,
+) -> pd.DataFrame:
+    """Override legacy gate rows with reproducible runtime decisions."""
+    frame = frame.copy()
+
+    decision_paths = [
+        path
+        for path in RUNTIME_GATE_DECISIONS
+        if path.exists()
+    ]
+
+    for decision_path in decision_paths:
+        metrics_path = decision_path.with_name(
+            "gated_metrics.csv"
+        )
+
+        if not metrics_path.exists():
+            print(
+                "[runtime-gate] Skipping decision without metrics:",
+                decision_path,
+            )
+            continue
+
+        decision = json.loads(
+            decision_path.read_text(encoding="utf-8")
+        )
+        gated = pd.read_csv(metrics_path)
+
+        if gated.empty:
+            raise ValueError(
+                f"Runtime gated metrics are empty: {metrics_path}"
+            )
+
+        required = {
+            "base_metrics_path",
+            "candidate_metrics_path",
+            "base_score",
+            "candidate_score",
+            "selected_score",
+            "base_n_features",
+            "candidate_n_features",
+        }
+        missing = sorted(required - set(gated.columns))
+
+        if missing:
+            raise ValueError(
+                f"Missing runtime gate columns in {metrics_path}: "
+                f"{missing}"
+            )
+
+        metadata_rows = []
+
+        for raw_path in gated["base_metrics_path"]:
+            metric_path = Path(str(raw_path))
+
+            if not metric_path.exists():
+                raise FileNotFoundError(
+                    f"Missing base metrics file: {metric_path}"
+                )
+
+            metric_frame = pd.read_csv(metric_path)
+
+            if len(metric_frame) != 1:
+                raise ValueError(
+                    f"Expected one row in {metric_path}, "
+                    f"found {len(metric_frame)}."
+                )
+
+            metadata_rows.append(
+                metric_frame.iloc[0].to_dict()
+            )
+
+        datasets = {
+            str(row["dataset"])
+            for row in metadata_rows
+        }
+        tasks = {
+            str(row["task"])
+            for row in metadata_rows
+        }
+
+        if len(datasets) != 1 or len(tasks) != 1:
+            raise ValueError(
+                "Runtime gate metadata disagrees across seeds: "
+                f"datasets={sorted(datasets)}, tasks={sorted(tasks)}"
+            )
+
+        dataset = next(iter(datasets))
+        task = next(iter(tasks))
+
+        mask = (
+            frame["dataset"].eq(dataset)
+            & frame["task"].eq(task)
+        )
+
+        if int(mask.sum()) != 1:
+            print(
+                "[runtime-gate] No unique paper-table row for:",
+                dataset,
+                task,
+            )
+            continue
+
+        gate_outcome = str(decision["gate_outcome"])
+        selected = gate_outcome == "SELECT"
+
+        base_score = float(gated["base_score"].mean())
+        candidate_score = float(
+            gated["candidate_score"].mean()
+        )
+        gated_score = float(gated["selected_score"].mean())
+        candidate_mean_improvement = float(
+            gated["improvement"].mean()
+        )
+        gated_gain = (
+            candidate_mean_improvement
+            if selected
+            else 0.0
+        )
+
+        base_n_features = float(
+            gated["base_n_features"].mean()
+        )
+        candidate_n_features = float(
+            gated["candidate_n_features"].mean()
+        )
+
+        frame.loc[mask, "gate_outcome"] = gate_outcome
+        frame.loc[mask, "gate_reason"] = (
+            "runtime_all_seed_improvement"
+            if selected
+            else "runtime_seed_inconsistency_fallback"
+        )
+        frame.loc[mask, "primary_metric"] = decision["metric"]
+        frame.loc[mask, "base_variant"] = decision[
+            "base_variant"
+        ]
+        frame.loc[mask, "candidate_variant"] = decision[
+            "candidate_variant"
+        ]
+        frame.loc[mask, "selected_variant"] = decision[
+            "selected_variant"
+        ]
+        frame.loc[mask, "base_n_features"] = base_n_features
+        frame.loc[
+            mask,
+            "candidate_n_features",
+        ] = candidate_n_features
+        frame.loc[
+            mask,
+            "selected_residual_count",
+        ] = (
+            candidate_n_features - base_n_features
+            if selected
+            else 0
+        )
+        frame.loc[mask, "base_score"] = base_score
+        frame.loc[mask, "candidate_score"] = candidate_score
+        frame.loc[mask, "gated_score"] = gated_score
+        frame.loc[mask, "gain"] = gated_gain
+        frame.loc[
+            mask,
+            "fallback_exact_match",
+        ] = not selected
+
+        metric = str(decision["metric"])
+
+        if metric == "log_loss":
+            frame.loc[mask, "log_loss_base"] = base_score
+            frame.loc[
+                mask,
+                "log_loss_candidate",
+            ] = candidate_score
+            frame.loc[mask, "log_loss_gated"] = gated_score
+            frame.loc[
+                mask,
+                "log_loss_reduction",
+            ] = gated_gain
+
+        elif metric == "accuracy":
+            frame.loc[mask, "accuracy_base"] = base_score
+            frame.loc[
+                mask,
+                "accuracy_candidate",
+            ] = candidate_score
+            frame.loc[mask, "accuracy_gated"] = gated_score
+            frame.loc[mask, "accuracy_gain"] = gated_gain
+
+        elif metric == "rmse":
+            frame.loc[mask, "rmse_base"] = base_score
+            frame.loc[
+                mask,
+                "rmse_candidate",
+            ] = candidate_score
+            frame.loc[mask, "rmse_gated"] = gated_score
+            frame.loc[
+                mask,
+                "rmse_reduction",
+            ] = gated_gain
+
+        elif metric == "mrr":
+            frame.loc[mask, "mrr_base"] = base_score
+            frame.loc[
+                mask,
+                "mrr_candidate",
+            ] = candidate_score
+            frame.loc[mask, "mrr_gain"] = gated_gain
+
+        print(
+            "[runtime-gate] Applied:",
+            dataset,
+            task,
+            gate_outcome,
+            (
+                f"candidate_mean_improvement="
+                f"{candidate_mean_improvement:.12g}"
+            ),
+            f"gated_gain={gated_gain:.12g}",
+        )
+
+    return frame
 
 
 rows = []
@@ -294,6 +531,7 @@ for _, r in arxiv.iterrows():
 # Final unified table
 # ------------------------------------------------------------------
 out = pd.DataFrame(rows)
+out = apply_runtime_gate_overrides(out)
 
 preferred_order = [
     "dataset",
