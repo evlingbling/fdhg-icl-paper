@@ -1,9 +1,9 @@
 dataset,task,task_family,gate_outcome,primary_metric,base_score,candidate_score,gated_score,gain,selected_residual_count,fallback_exact_match,role_in_paper
 rel-arxiv,author-category,multiclass_classification,SELECT,accuracy,0.22225,0.4882499999999999,0.4882499999999999,0.2659999999999999,3.0,False,strong_positive_mechanism_case
 rel-arxiv,paper-citation,binary_classification,FALLBACK,log_loss,0.530782567185184,0.530782567185184,0.530782567185184,0.0,0.0,True,real_world_negative_control
-rel-ratebeer,beer-churn,relbench_v2_binary_classification,SELECT,log_loss,0.660660584099654,0.6581031299516781,0.6581031299516781,0.002557454147975924,8.0,False,weak_positive_case
+rel-ratebeer,beer-churn,relbench_v2_binary_classification,SELECT,log_loss,0.6606501209052107,0.6581038653836577,0.6581038653836577,0.00254625552155285,8.0,False,weak_positive_case
 rel-ratebeer,beer_ratings-total_score_enriched,relbench_v2_autocomplete_regression_rescued,FALLBACK,rmse,,,,,0.0,True,regression_fallback_case
-rel-ratebeer,brewer-dormant,relbench_v2_binary_classification,FALLBACK,log_loss,0.5510387416743945,0.5512427941288531,0.5510387416743945,0.0,0.0,True,fallback_case
+rel-ratebeer,brewer-dormant,relbench_v2_binary_classification,FALLBACK,log_loss,0.5510380095889558,0.5512453670494456,0.5510380095889558,0.0,0.0,True,fallback_case
 rel-ratebeer,user-churn,relbench_v2_binary_classification,FALLBACK,log_loss,0.5766863242930735,0.5762785822782767,0.5766863242930735,0.0,0.0,True,fallback_case
 rel-ratebeer,user-count,relbench_v2_regression,SELECT,rmse,,,,,8.0,False,regression_positive_case
 rel-ratebeer,user-place-liked_pairwise,pairwise_recommendation_adapter,FALLBACK,log_loss,1.0889027886723532,1.112764772778334,1.0889027886723532,0.0,0.0,True,fallback_case
