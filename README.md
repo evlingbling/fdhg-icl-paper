@@ -18,7 +18,11 @@ It augments a strong relational aggregation baseline with feature programs deriv
 The completed experiment checklist contains 51 relational prediction targets:
 
 * 26 validation-gated FDHG selections
-* 24 exact baseline fallbacks
+* 24 validation-gated selections
+* 26 fallbacks to DFS or a stronger task-specific baseline
+* 1 task not evaluated
+
+Across the 51-task appendix inventory, complete paired four-seed artifacts were normalized for 18 tasks, while the remaining 33 entries retain their archived inventory decisions. Strict seed-level reconciliation revised four archived labels. Driver-DNF remains a fallback because its archived decision compares against a stronger temporal baseline rather than DFS alone.
 * 1 target marked not evaluated
 * 0 incomplete targets
 
