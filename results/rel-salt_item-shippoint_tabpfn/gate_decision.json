@@ -1,0 +1,41 @@
+{
+  "result_root": "/home/evelyn/fdhg-icl-paper/results/rel-salt_item-shippoint_tabpfn",
+  "base_variant": "dfs",
+  "candidate_variant": "fdhg_dmax1",
+  "metric": "accuracy",
+  "direction": "maximize",
+  "secondary_metric": null,
+  "secondary_direction": null,
+  "gate_mode": "single_metric",
+  "min_improvement": 0.0,
+  "seeds": [
+    41,
+    42,
+    43,
+    44
+  ],
+  "base_scores": [
+    0.7447342026078235,
+    0.7627883650952858,
+    0.7477432296890673,
+    0.7477432296890673
+  ],
+  "candidate_scores": [
+    0.8269809428284854,
+    0.8234704112337011,
+    0.8294884653961886,
+    0.802407221664995
+  ],
+  "secondary_base_scores": null,
+  "secondary_candidate_scores": null,
+  "per_seed_improvements": [
+    0.08224674022066192,
+    0.060682046138415324,
+    0.08174523570712133,
+    0.05466399197592775
+  ],
+  "require_all_seeds": true,
+  "gate_outcome": "SELECT",
+  "selected_variant": "fdhg_dmax1",
+  "fallback_exact_match": false
+}

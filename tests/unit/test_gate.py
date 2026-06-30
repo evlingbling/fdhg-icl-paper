@@ -71,3 +71,68 @@ def test_consistent_gate_rejects_nan() -> None:
             [0.72, 0.73],
             direction="maximize",
         )
+
+
+def test_lexicographic_gate_accepts_primary_improvement() -> None:
+    from fdhg.gate import lexicographic_improvement_gate
+
+    assert lexicographic_improvement_gate(
+        [0.70, 0.71],
+        [0.71, 0.72],
+        [0.80, 0.80],
+        [0.79, 0.79],
+        primary_direction="maximize",
+        secondary_direction="maximize",
+    )
+
+
+def test_lexicographic_gate_accepts_tied_primary_with_mrr_gain() -> None:
+    from fdhg.gate import lexicographic_improvement_gate
+
+    assert lexicographic_improvement_gate(
+        [0.70, 0.71],
+        [0.70, 0.71],
+        [0.80, 0.81],
+        [0.81, 0.82],
+        primary_direction="maximize",
+        secondary_direction="maximize",
+    )
+
+
+def test_lexicographic_gate_rejects_tied_primary_without_mrr_gain() -> None:
+    from fdhg.gate import lexicographic_improvement_gate
+
+    assert not lexicographic_improvement_gate(
+        [0.70, 0.71],
+        [0.70, 0.71],
+        [0.80, 0.81],
+        [0.80, 0.82],
+        primary_direction="maximize",
+        secondary_direction="maximize",
+    )
+
+
+def test_lexicographic_gate_rejects_primary_regression() -> None:
+    from fdhg.gate import lexicographic_improvement_gate
+
+    assert not lexicographic_improvement_gate(
+        [0.70, 0.71],
+        [0.69, 0.72],
+        [0.80, 0.81],
+        [0.90, 0.90],
+        primary_direction="maximize",
+        secondary_direction="maximize",
+    )
+
+
+def test_lexicographic_gate_supports_minimize_secondary() -> None:
+    from fdhg.gate import lexicographic_improvement_gate
+
+    assert lexicographic_improvement_gate(
+        [0.80, 0.81],
+        [0.80, 0.81],
+        [0.40, 0.39],
+        [0.39, 0.38],
+        primary_direction="maximize",
+        secondary_direction="minimize",
+    )

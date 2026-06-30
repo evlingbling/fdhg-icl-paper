@@ -1,0 +1,41 @@
+{
+  "result_root": "/home/evelyn/fdhg-icl-paper/results/rel-arxiv_paper-citation_tabpfn",
+  "base_variant": "dfs",
+  "candidate_variant": "fdhg_dmax1",
+  "metric": "log_loss",
+  "direction": "minimize",
+  "secondary_metric": null,
+  "secondary_direction": null,
+  "gate_mode": "single_metric",
+  "min_improvement": 0.0,
+  "seeds": [
+    41,
+    42,
+    43,
+    44
+  ],
+  "base_scores": [
+    0.5310805170474572,
+    0.5306419315699158,
+    0.5307238563943482,
+    0.53076890168109
+  ],
+  "candidate_scores": [
+    0.5310805170474572,
+    0.5306419315699158,
+    0.5307238563943482,
+    0.53076890168109
+  ],
+  "secondary_base_scores": null,
+  "secondary_candidate_scores": null,
+  "per_seed_improvements": [
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ],
+  "require_all_seeds": true,
+  "gate_outcome": "FALLBACK",
+  "selected_variant": "dfs",
+  "fallback_exact_match": true
+}

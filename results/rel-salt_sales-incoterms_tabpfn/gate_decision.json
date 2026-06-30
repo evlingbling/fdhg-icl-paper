@@ -1,0 +1,41 @@
+{
+  "result_root": "/home/evelyn/fdhg-icl-paper/results/rel-salt_sales-incoterms_tabpfn",
+  "base_variant": "dfs",
+  "candidate_variant": "fdhg_dmax1",
+  "metric": "accuracy",
+  "direction": "maximize",
+  "secondary_metric": null,
+  "secondary_direction": null,
+  "gate_mode": "single_metric",
+  "min_improvement": 0.0,
+  "seeds": [
+    41,
+    42,
+    43,
+    44
+  ],
+  "base_scores": [
+    0.592,
+    0.592,
+    0.592,
+    0.592
+  ],
+  "candidate_scores": [
+    0.597,
+    0.597,
+    0.597,
+    0.597
+  ],
+  "secondary_base_scores": null,
+  "secondary_candidate_scores": null,
+  "per_seed_improvements": [
+    0.0050000000000000044,
+    0.0050000000000000044,
+    0.0050000000000000044,
+    0.0050000000000000044
+  ],
+  "require_all_seeds": true,
+  "gate_outcome": "SELECT",
+  "selected_variant": "fdhg_dmax1",
+  "fallback_exact_match": false
+}

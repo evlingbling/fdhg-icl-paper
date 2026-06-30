@@ -1,0 +1,41 @@
+{
+  "result_root": "/home/evelyn/fdhg-icl-paper/results/rel-ratebeer_beer-churn_tabpfn",
+  "base_variant": "dfs",
+  "candidate_variant": "fdhg_dmax1",
+  "metric": "log_loss",
+  "direction": "minimize",
+  "secondary_metric": null,
+  "secondary_direction": null,
+  "gate_mode": "single_metric",
+  "min_improvement": 0.0,
+  "seeds": [
+    41,
+    42,
+    43,
+    44
+  ],
+  "base_scores": [
+    0.6599614451760486,
+    0.6609655531653764,
+    0.6608144747433453,
+    0.6608590105360722
+  ],
+  "candidate_scores": [
+    0.6586797662449132,
+    0.6574203542194856,
+    0.6581108581266183,
+    0.6582044829436138
+  ],
+  "secondary_base_scores": null,
+  "secondary_candidate_scores": null,
+  "per_seed_improvements": [
+    0.0012816789311353993,
+    0.0035451989458907818,
+    0.0027036166167270226,
+    0.0026545275924584333
+  ],
+  "require_all_seeds": true,
+  "gate_outcome": "SELECT",
+  "selected_variant": "fdhg_dmax1",
+  "fallback_exact_match": false
+}

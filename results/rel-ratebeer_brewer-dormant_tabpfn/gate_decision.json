@@ -1,0 +1,41 @@
+{
+  "result_root": "/home/evelyn/fdhg-icl-paper/results/rel-ratebeer_brewer-dormant_tabpfn",
+  "base_variant": "dfs",
+  "candidate_variant": "fdhg_dmax1",
+  "metric": "log_loss",
+  "direction": "minimize",
+  "secondary_metric": null,
+  "secondary_direction": null,
+  "gate_mode": "single_metric",
+  "min_improvement": 0.0,
+  "seeds": [
+    41,
+    42,
+    43,
+    44
+  ],
+  "base_scores": [
+    0.5510913515875054,
+    0.551018105850756,
+    0.5509360437789419,
+    0.5511065371386197
+  ],
+  "candidate_scores": [
+    0.55131749346015,
+    0.5509661019611747,
+    0.5512199604452395,
+    0.5514779123312182
+  ],
+  "secondary_base_scores": null,
+  "secondary_candidate_scores": null,
+  "per_seed_improvements": [
+    -0.00022614187264458074,
+    5.200388958126467e-05,
+    -0.00028391666629756784,
+    -0.00037137519259855534
+  ],
+  "require_all_seeds": true,
+  "gate_outcome": "FALLBACK",
+  "selected_variant": "dfs",
+  "fallback_exact_match": true
+}

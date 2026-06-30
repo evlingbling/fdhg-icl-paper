@@ -7,7 +7,10 @@ from pathlib import Path
 
 import pandas as pd
 
-from fdhg.gate import consistent_improvement_gate
+from fdhg.gate import (
+    consistent_improvement_gate,
+    lexicographic_improvement_gate,
+)
 
 
 SEED_PATTERN = re.compile(r"seed(\d+)$")
@@ -33,6 +36,15 @@ def parse_args() -> argparse.Namespace:
         "--direction",
         choices=["maximize", "minimize"],
         required=True,
+    )
+    parser.add_argument(
+        "--secondary-metric",
+        default=None,
+    )
+    parser.add_argument(
+        "--secondary-direction",
+        choices=["maximize", "minimize"],
+        default=None,
     )
     parser.add_argument(
         "--base-variant",
@@ -158,8 +170,18 @@ def main() -> None:
                 f"Expected seeds {required}, found {seeds}."
             )
 
+    if bool(args.secondary_metric) != bool(
+        args.secondary_direction
+    ):
+        raise ValueError(
+            "Provide both --secondary-metric and "
+            "--secondary-direction, or neither."
+        )
+
     base_scores: list[float] = []
     candidate_scores: list[float] = []
+    secondary_base_scores: list[float] = []
+    secondary_candidate_scores: list[float] = []
     per_seed_rows: list[dict] = []
 
     for seed in seeds:
@@ -182,6 +204,27 @@ def main() -> None:
         base_scores.append(base_score)
         candidate_scores.append(candidate_score)
 
+        secondary_base_score = None
+        secondary_candidate_score = None
+
+        if args.secondary_metric:
+            secondary_base_score, _ = read_metric(
+                base_paths[seed],
+                metric=args.secondary_metric,
+                expected_seed=seed,
+            )
+            secondary_candidate_score, _ = read_metric(
+                candidate_paths[seed],
+                metric=args.secondary_metric,
+                expected_seed=seed,
+            )
+            secondary_base_scores.append(
+                secondary_base_score
+            )
+            secondary_candidate_scores.append(
+                secondary_candidate_score
+            )
+
         per_seed_rows.append({
             "seed": seed,
             "metric": args.metric,
@@ -191,6 +234,28 @@ def main() -> None:
             "base_score": base_score,
             "candidate_score": candidate_score,
             "improvement": improvement,
+            "secondary_metric": args.secondary_metric,
+            "secondary_direction": args.secondary_direction,
+            "secondary_base_score": secondary_base_score,
+            "secondary_candidate_score": (
+                secondary_candidate_score
+            ),
+            "secondary_improvement": (
+                (
+                    secondary_candidate_score
+                    - secondary_base_score
+                )
+                if (
+                    args.secondary_metric
+                    and args.secondary_direction == "maximize"
+                )
+                else (
+                    secondary_base_score
+                    - secondary_candidate_score
+                )
+                if args.secondary_metric
+                else None
+            ),
             "base_metrics_path": str(base_paths[seed]),
             "candidate_metrics_path": str(
                 candidate_paths[seed]
@@ -201,12 +266,22 @@ def main() -> None:
             ),
         })
 
-    selected = consistent_improvement_gate(
-        base_scores,
-        candidate_scores,
-        direction=args.direction,
-        min_improvement=args.min_improvement,
-    )
+    if args.secondary_metric:
+        selected = lexicographic_improvement_gate(
+            base_scores,
+            candidate_scores,
+            secondary_base_scores,
+            secondary_candidate_scores,
+            primary_direction=args.direction,
+            secondary_direction=args.secondary_direction,
+        )
+    else:
+        selected = consistent_improvement_gate(
+            base_scores,
+            candidate_scores,
+            direction=args.direction,
+            min_improvement=args.min_improvement,
+        )
 
     gate_outcome = "SELECT" if selected else "FALLBACK"
     selected_variant = (
@@ -230,10 +305,27 @@ def main() -> None:
         "candidate_variant": args.candidate_variant,
         "metric": args.metric,
         "direction": args.direction,
+        "secondary_metric": args.secondary_metric,
+        "secondary_direction": args.secondary_direction,
+        "gate_mode": (
+            "lexicographic"
+            if args.secondary_metric
+            else "single_metric"
+        ),
         "min_improvement": args.min_improvement,
         "seeds": seeds,
         "base_scores": base_scores,
         "candidate_scores": candidate_scores,
+        "secondary_base_scores": (
+            secondary_base_scores
+            if args.secondary_metric
+            else None
+        ),
+        "secondary_candidate_scores": (
+            secondary_candidate_scores
+            if args.secondary_metric
+            else None
+        ),
         "per_seed_improvements": [
             row["improvement"]
             for row in per_seed_rows

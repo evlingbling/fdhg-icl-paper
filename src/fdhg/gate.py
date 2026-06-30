@@ -92,3 +92,104 @@ def regression_gate(
         candidate_rmse,
         direction="minimize",
     )
+
+
+def lexicographic_improvement_gate(
+    primary_baseline: Iterable[float],
+    primary_candidate: Iterable[float],
+    secondary_baseline: Iterable[float],
+    secondary_candidate: Iterable[float],
+    *,
+    primary_direction: Direction,
+    secondary_direction: Direction,
+    tolerance: float = 1e-12,
+) -> bool:
+    """
+    Apply a per-seed lexicographic gate.
+
+    The candidate passes a seed when the primary metric improves, or
+    when the primary metric is tied within tolerance and the secondary
+    metric improves. Every seed must pass.
+    """
+    primary_pairs = list(
+        zip(
+            primary_baseline,
+            primary_candidate,
+            strict=True,
+        )
+    )
+    secondary_pairs = list(
+        zip(
+            secondary_baseline,
+            secondary_candidate,
+            strict=True,
+        )
+    )
+
+    if not primary_pairs:
+        raise ValueError("At least one seed is required.")
+
+    if len(primary_pairs) != len(secondary_pairs):
+        raise ValueError(
+            "Primary and secondary metrics must have equal lengths."
+        )
+
+    if primary_direction not in {"maximize", "minimize"}:
+        raise ValueError("Invalid primary direction.")
+
+    if secondary_direction not in {"maximize", "minimize"}:
+        raise ValueError("Invalid secondary direction.")
+
+    def improvement(
+        baseline_value: float,
+        candidate_value: float,
+        direction: Direction,
+    ) -> float:
+        baseline_float = float(baseline_value)
+        candidate_float = float(candidate_value)
+
+        if not isfinite(baseline_float):
+            raise ValueError("Baseline scores must be finite.")
+
+        if not isfinite(candidate_float):
+            raise ValueError("Candidate scores must be finite.")
+
+        if direction == "maximize":
+            return candidate_float - baseline_float
+
+        return baseline_float - candidate_float
+
+    seed_passes = []
+
+    for primary_pair, secondary_pair in zip(
+        primary_pairs,
+        secondary_pairs,
+        strict=True,
+    ):
+        primary_gain = improvement(
+            primary_pair[0],
+            primary_pair[1],
+            primary_direction,
+        )
+        secondary_gain = improvement(
+            secondary_pair[0],
+            secondary_pair[1],
+            secondary_direction,
+        )
+
+        primary_tied = isclose(
+            primary_gain,
+            0.0,
+            rel_tol=tolerance,
+            abs_tol=tolerance,
+        )
+
+        seed_passes.append(
+            primary_gain > tolerance
+            or (
+                primary_tied
+                and secondary_gain > tolerance
+            )
+        )
+
+    return all(seed_passes)

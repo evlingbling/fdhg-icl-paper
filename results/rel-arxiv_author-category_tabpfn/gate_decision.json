@@ -1,0 +1,41 @@
+{
+  "result_root": "/home/evelyn/fdhg-icl-paper/results/rel-arxiv_author-category_tabpfn",
+  "base_variant": "dfs",
+  "candidate_variant": "fdhg_dmax1",
+  "metric": "accuracy",
+  "direction": "maximize",
+  "secondary_metric": null,
+  "secondary_direction": null,
+  "gate_mode": "single_metric",
+  "min_improvement": 0.0,
+  "seeds": [
+    41,
+    42,
+    43,
+    44
+  ],
+  "base_scores": [
+    0.2185,
+    0.224,
+    0.221,
+    0.22
+  ],
+  "candidate_scores": [
+    0.489,
+    0.488,
+    0.49,
+    0.4895
+  ],
+  "secondary_base_scores": null,
+  "secondary_candidate_scores": null,
+  "per_seed_improvements": [
+    0.27049999999999996,
+    0.264,
+    0.269,
+    0.26949999999999996
+  ],
+  "require_all_seeds": true,
+  "gate_outcome": "SELECT",
+  "selected_variant": "fdhg_dmax1",
+  "fallback_exact_match": false
+}

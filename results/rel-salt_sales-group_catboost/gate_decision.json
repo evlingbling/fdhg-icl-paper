@@ -1,0 +1,41 @@
+{
+  "result_root": "/home/evelyn/fdhg-icl-paper/results/rel-salt_sales-group_catboost",
+  "base_variant": "dfs",
+  "candidate_variant": "fdhg_dmax1",
+  "metric": "accuracy",
+  "direction": "maximize",
+  "secondary_metric": null,
+  "secondary_direction": null,
+  "gate_mode": "single_metric",
+  "min_improvement": 0.0,
+  "seeds": [
+    41,
+    42,
+    43,
+    44
+  ],
+  "base_scores": [
+    0.0775193798449612,
+    0.0775193798449612,
+    0.0775193798449612,
+    0.0775193798449612
+  ],
+  "candidate_scores": [
+    0.0806201550387596,
+    0.0806201550387596,
+    0.0806201550387596,
+    0.0806201550387596
+  ],
+  "secondary_base_scores": null,
+  "secondary_candidate_scores": null,
+  "per_seed_improvements": [
+    0.003100775193798408,
+    0.003100775193798408,
+    0.003100775193798408,
+    0.003100775193798408
+  ],
+  "require_all_seeds": true,
+  "gate_outcome": "SELECT",
+  "selected_variant": "fdhg_dmax1",
+  "fallback_exact_match": false
+}
